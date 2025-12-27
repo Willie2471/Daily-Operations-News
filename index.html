@@ -167,6 +167,44 @@
             to { transform: translateY(0); opacity: 1; }
         }
         
+        .critical-alerts {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            border-left: 5px solid var(--danger);
+            display: none;
+        }
+        
+        .critical-alerts.show {
+            display: block;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3); }
+            50% { box-shadow: 0 4px 16px rgba(231, 76, 60, 0.6); }
+        }
+        
+        .critical-alerts h2 {
+            color: var(--danger);
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .critical-item {
+            padding: 12px;
+            background: #fff5f5;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--danger);
+            font-weight: 600;
+        }
+        
         .section {
             background: white;
             padding: 30px;
@@ -185,6 +223,13 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
+        }
+        
+        .clock-weather-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            align-items: center;
         }
         
         .metrics-grid {
@@ -297,21 +342,15 @@
             position: relative;
         }
         
+        .detail-item.overdue-item {
+            background: #fff5f5;
+            border-left-color: var(--danger);
+        }
+        
         .detail-item strong {
             color: var(--primary-green);
             display: block;
             margin-bottom: 5px;
-        }
-        
-        .detail-item .task-actions {
-            margin-top: 10px;
-            display: flex;
-            gap: 8px;
-        }
-        
-        .detail-item .btn-small {
-            padding: 4px 10px;
-            font-size: 0.8em;
         }
         
         .detail-item .due-date {
@@ -343,14 +382,14 @@
         }
         
         .time {
-            font-size: 3em;
+            font-size: 2.5em;
             font-weight: 700;
             color: var(--primary-green);
             margin-bottom: 10px;
         }
         
         .date {
-            font-size: 1.2em;
+            font-size: 1em;
             color: var(--text-light);
         }
         
@@ -462,24 +501,25 @@
         
         .scripture-box {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 25px;
+            padding: 20px;
             border-radius: 8px;
             border-left: 4px solid var(--primary-green);
             text-align: center;
+            margin-top: 20px;
         }
         
         .scripture-text {
-            font-size: 1.2em;
+            font-size: 1.1em;
             font-style: italic;
             color: var(--text-dark);
             line-height: 1.8;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         
         .scripture-reference {
             font-weight: 600;
             color: var(--primary-green);
-            font-size: 1.1em;
+            font-size: 1em;
         }
         
         .refresh-indicator {
@@ -520,6 +560,77 @@
             font-size: 0.85em;
         }
         
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            background: var(--primary-green);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.3em;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-close:hover {
+            opacity: 0.8;
+        }
+        
+        .modal-body {
+            height: calc(90vh - 80px);
+            overflow: hidden;
+        }
+        
+        .modal-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
         @media print {
             body * { visibility: hidden; }
             #meetingPDF, #meetingPDF * { visibility: visible; }
@@ -530,6 +641,12 @@
                 width: 100%;
             }
             .no-print { display: none !important; }
+        }
+        
+        @media (max-width: 1200px) {
+            .clock-weather-row {
+                grid-template-columns: 1fr;
+            }
         }
         
         @media (max-width: 768px) {
@@ -548,6 +665,12 @@
         <button onclick="closeAlert()" style="background:none;border:none;color:white;font-size:1.5em;cursor:pointer;">&times;</button>
     </div>
 
+    <!-- Critical Alerts Section -->
+    <div id="criticalAlerts" class="critical-alerts">
+        <h2>🚨 CRITICAL ALERTS</h2>
+        <div id="criticalAlertsContent"></div>
+    </div>
+
     <div class="dashboard-header">
         <div class="header-content">
             <div class="logo-section">
@@ -558,9 +681,9 @@
                 </div>
             </div>
             <div class="header-controls">
-                <a href="https://form-interface-22cc5c.zapier.app/" target="_blank" class="btn btn-success">
+                <button class="btn btn-success" onclick="openTaskModal()">
                     ➕ New Task
-                </a>
+                </button>
                 <button class="btn btn-secondary" onclick="generateMeetingPDF()">
                     📋 Meeting Report
                 </button>
@@ -580,16 +703,26 @@
     </div>
 
     <div class="container">
-        <!-- Clock, Date & Scripture -->
+        <!-- Clock, Weather & Scripture Combined -->
         <div class="section">
-            <div class="clock-display">
-                <div class="time" id="currentTime">--:--:--</div>
-                <div class="date" id="currentDate">Loading...</div>
-            </div>
-            <div style="margin-top: 30px;">
-                <div class="scripture-box">
-                    <div class="scripture-text" id="scriptureText">Loading...</div>
-                    <div class="scripture-reference" id="scriptureReference"></div>
+            <div class="clock-weather-row">
+                <div>
+                    <div class="clock-display">
+                        <div class="time" id="currentTime">--:--:--</div>
+                        <div class="date" id="currentDate">Loading...</div>
+                    </div>
+                    <div class="scripture-box">
+                        <div class="scripture-text" id="scriptureText">Loading...</div>
+                        <div class="scripture-reference" id="scriptureReference"></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="text-align:center;margin-bottom:15px;">
+                        <h3 style="color:var(--primary-green);">🌤️ 3-Day Forecast - Titusville, FL</h3>
+                    </div>
+                    <div class="weather-grid" id="weatherDisplay">
+                        <div class="loading">Loading weather...</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -600,99 +733,7 @@
                 <span>📊 Operations Dashboard</span>
             </div>
             <div class="metrics-grid" id="keyMetrics">
-                <!-- New Leads -->
-                <div class="metric-card expandable alert-warning" onclick="toggleExpand('newLeads')">
-                    <div class="metric-header">
-                        <span class="metric-title">New Leads</span>
-                        <span class="metric-icon expand-icon" id="newLeadsIcon">▼</span>
-                    </div>
-                    <div class="metric-value" id="newLeadsCount">--</div>
-                    <div class="metric-subtitle">Estimates needed</div>
-                    <div class="expandable-content" id="newLeadsContent">
-                        <div class="loading">Loading...</div>
-                    </div>
-                </div>
-
-                <!-- New Messages -->
-                <div class="metric-card expandable" onclick="toggleExpand('newMessages')">
-                    <div class="metric-header">
-                        <span class="metric-title">New Messages</span>
-                        <span class="metric-icon expand-icon" id="newMessagesIcon">▼</span>
-                    </div>
-                    <div class="metric-value" id="newMessagesCount">--</div>
-                    <div class="metric-subtitle">From EveryChat</div>
-                    <div class="expandable-content" id="newMessagesContent">
-                        <div class="loading">Loading...</div>
-                    </div>
-                </div>
-
-                <!-- Incoming Calls -->
-                <div class="metric-card expandable" onclick="toggleExpand('incomingCalls')">
-                    <div class="metric-header">
-                        <span class="metric-title">Voicemails</span>
-                        <span class="metric-icon expand-icon" id="incomingCallsIcon">▼</span>
-                    </div>
-                    <div class="metric-value" id="incomingCallsCount">--</div>
-                    <div class="metric-subtitle">Calls to return</div>
-                    <div class="expandable-content" id="incomingCallsContent">
-                        <div class="loading">Loading...</div>
-                    </div>
-                </div>
-
-                <!-- Need to Call -->
-                <div class="metric-card expandable" onclick="toggleExpand('needToCall')">
-                    <div class="metric-header">
-                        <span class="metric-title">Need to Call</span>
-                        <span class="metric-icon expand-icon" id="needToCallIcon">▼</span>
-                    </div>
-                    <div class="metric-value" id="needToCallCount">--</div>
-                    <div class="metric-subtitle">Outbound calls</div>
-                    <div class="expandable-content" id="needToCallContent">
-                        <div class="loading">Loading...</div>
-                    </div>
-                </div>
-
-                <!-- Mowing Estimates -->
-                <div class="metric-card expandable" onclick="toggleExpand('mowingEstimates')">
-                    <div class="metric-header">
-                        <span class="metric-title">Mowing Estimates</span>
-                        <span class="metric-icon expand-icon" id="mowingEstimatesIcon">▼</span>
-                    </div>
-                    <div class="metric-value" id="mowingEstimatesCount">--</div>
-                    <div class="metric-subtitle">Pending quotes</div>
-                    <div class="expandable-content" id="mowingEstimatesContent">
-                        <div class="loading">Loading...</div>
-                    </div>
-                </div>
-
-                <!-- Bank Balance -->
-                <div class="metric-card" id="bankBalanceCard">
-                    <div class="metric-header">
-                        <span class="metric-title">Bank Balance</span>
-                        <span class="metric-icon">🏦</span>
-                    </div>
-                    <div class="metric-value" id="bankBalance">--</div>
-                    <div class="metric-subtitle" id="lastChecked">Loading...</div>
-                </div>
-
-                <!-- Needs Categorizing -->
-                <div class="metric-card" id="needsCategorizingCard">
-                    <div class="metric-header">
-                        <span class="metric-title">Needs Categorizing</span>
-                        <span class="metric-icon">⚠️</span>
-                    </div>
-                    <div class="metric-value" id="needsCategorizingCount">--</div>
-                    <div class="metric-subtitle">Uncategorized items</div>
-                    <div class="metric-badge badge-good" id="needsCategorizingBadge">Loading...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Weather -->
-        <div class="section">
-            <div class="section-title">🌤️ 3-Day Weather - Titusville, FL 32780</div>
-            <div class="weather-grid" id="weatherDisplay">
-                <div class="loading">Loading weather...</div>
+                <!-- Cards will be populated by JavaScript -->
             </div>
         </div>
 
@@ -701,6 +742,19 @@
             <div class="section-title">📰 Top News</div>
             <div id="newsDisplay">
                 <div class="loading">Loading news...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Task Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>➕ Create New Task</h2>
+                <button class="modal-close" onclick="closeTaskModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <iframe src="https://form-interface-22cc5c.zapier.app/" id="taskIframe"></iframe>
             </div>
         </div>
     </div>
@@ -723,27 +777,51 @@
         // ============================================
         // CONFIGURATION
         // ============================================
-        const SPREADSHEET_ID = '1fFbsuDFXu_W4MK234vNwM-WsEHkcDp6N1Tn_ZRe_J1I';
-        const TRANSACTIONS_GID = '1256593101';
-        const EVERYCHAT_SPREADSHEET_ID = '1ZSCMDhwFQwI0cvfZ5tT4aq_OzOJndIcfKeyCkA4h2Nk';
-        const EVERYCHAT_GID = '0';
         const NEWS_API_KEY = '77a1111db4974eb6ae716447a6350df8';
-
-        // Task List IDs from Google Tasks
-        const TASK_LISTS = {
-            newLeads: 'Y24yamN5SU05UFZHYW8zeQ',
-            needToCall: 'SjZXOHBUX2xTSDdfYzFjMA',
-            incomingCalls: 'bDdJUWQwSHUtay1BLXRyYg',
-            mowingEstimates: 'bUo4WXFvT3ZSVWs2MHliSg',
-            newMeetingTopics: 'RWQ0Qk5yXzRvSjRhRnliLQ',
-            followUpFromMeet: 'eTdyR3JZWTNUNm9wZDhNTA'
-        };
+        const CORS_PROXY = 'https://corsproxy.io/?';
 
         let refreshIntervalId = null;
         let refreshCountdownId = null;
         let secondsRemaining = 0;
         let expandedSections = new Set();
         let tasksData = {};
+        let bankBalance = 0;
+        let criticalAlerts = [];
+
+        // ============================================
+        // MOCK DATA (Replace with actual API calls when served from web server)
+        // ============================================
+        const MOCK_DATA = {
+            newLeads: [
+                { title: "Arreola, Willie", notes: "Need to send estimate", due: "2025-12-27T00:00:00.000Z", daysOld: 0 },
+                { title: "Patti McCahill", notes: "Project photos received", due: "2025-12-24T00:00:00.000Z", daysOld: 3 },
+                { title: "Buchmaier (RE/MAX)", notes: "Need to send estimate", due: "2025-12-23T00:00:00.000Z", daysOld: 4 },
+                { title: "Dye, Anna", notes: "Need to send estimate", due: "2025-12-23T00:00:00.000Z", daysOld: 4 },
+                { title: "Pownall, Jerry", notes: "Need to send estimate", due: "2025-12-20T00:00:00.000Z", daysOld: 7 }
+            ],
+            incomingCalls: [
+                { title: "Fort Lupton Co", notes: "Phone: +17208025204", due: "2025-12-22T00:00:00.000Z", daysOld: 5 },
+                { title: "Auto Glass Svc", notes: "Phone: +13212035036", due: "2025-12-09T00:00:00.000Z", daysOld: 18 },
+                { title: "(321) 483-9075", notes: "Unknown Caller", due: "2025-12-04T00:00:00.000Z", daysOld: 23 }
+            ],
+            needToCall: [],
+            mowingEstimates: [],
+            newMessages: [
+                { from: "(555) 123-4567", message: "Hi, I'd like a quote for weekly mowing service", date: "12/27/2025", time: "2:15 PM", daysOld: 0 }
+            ],
+            bankBalance: 2500,
+            lastChecked: "12/27/2025 8:00 AM",
+            needsCategorizing: 3,
+            newMeetingTopics: [
+                { title: "Communication", notes: "Do not interrupt each other when speaking and explaining", due: "2025-11-29T00:00:00.000Z" }
+            ],
+            followUpFromMeet: [
+                { title: "Buy battery", notes: "", due: "2025-10-12T00:00:00.000Z" },
+                { title: "Golf Cart Decision", notes: "Should we sell or fix up?", due: "2025-10-07T00:00:00.000Z" },
+                { title: "KPI Tracking", notes: "What KPIs should we monitor?", due: null },
+                { title: "Expenses Report", notes: "Clear view of income vs expenses for Sandra", due: null }
+            ]
+        };
 
         // ============================================
         // CLOCK
@@ -761,11 +839,32 @@
         updateClock();
 
         // ============================================
+        // MODAL CONTROLS
+        // ============================================
+        function openTaskModal() {
+            document.getElementById('taskModal').classList.add('show');
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.remove('show');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('taskModal');
+            if (event.target === modal) {
+                closeTaskModal();
+            }
+        }
+
+        // ============================================
         // UI CONTROLS
         // ============================================
         function toggleExpand(section) {
             const content = document.getElementById(`${section}Content`);
             const icon = document.getElementById(`${section}Icon`);
+            
+            if (!content || !icon) return;
             
             if (expandedSections.has(section)) {
                 content.classList.remove('expanded');
@@ -821,6 +920,46 @@
         }
 
         // ============================================
+        // CRITICAL ALERTS
+        // ============================================
+        function checkCriticalAlerts() {
+            criticalAlerts = [];
+            
+            // Check bank balance
+            if (bankBalance < 1000) {
+                criticalAlerts.push(`💰 Bank balance is critically low: $${bankBalance.toFixed(2)}`);
+            }
+            
+            // Check overdue tasks
+            const checkTaskAge = (tasks, category) => {
+                tasks.forEach(task => {
+                    if (task.daysOld > 2) {
+                        criticalAlerts.push(`⏰ ${category}: "${task.title}" is ${task.daysOld} days old`);
+                    }
+                });
+            };
+            
+            checkTaskAge(tasksData.newLeads || [], 'New Lead');
+            checkTaskAge(tasksData.needToCall || [], 'Need to Call');
+            checkTaskAge(tasksData.mowingEstimates || [], 'Mowing Estimate');
+            checkTaskAge(tasksData.newMessages || [], 'New Message');
+            checkTaskAge(tasksData.incomingCalls || [], 'Voicemail');
+            
+            // Display critical alerts
+            const alertsDiv = document.getElementById('criticalAlerts');
+            const contentDiv = document.getElementById('criticalAlertsContent');
+            
+            if (criticalAlerts.length > 0) {
+                contentDiv.innerHTML = criticalAlerts.map(alert => 
+                    `<div class="critical-item">${alert}</div>`
+                ).join('');
+                alertsDiv.classList.add('show');
+            } else {
+                alertsDiv.classList.remove('show');
+            }
+        }
+
+        // ============================================
         // UTILITIES
         // ============================================
         function formatCurrency(amount) {
@@ -830,11 +969,6 @@
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0
             }).format(amount);
-        }
-
-        function parseNumber(value) {
-            if (!value) return 0;
-            return parseFloat(value.toString().replace(/[$,]/g, '')) || 0;
         }
 
         function formatDate(dateString) {
@@ -850,237 +984,111 @@
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         }
 
+        function calculateDaysOld(dateString) {
+            if (!dateString) return 0;
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = now - date;
+            return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        }
+
         // ============================================
-        // GOOGLE SHEETS DATA
+        // LOAD DATA
         // ============================================
-        async function fetchSheetData(sheetId, sheetGid) {
-            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${sheetGid}`;
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        function loadMockData() {
+            // Use mock data for now
+            tasksData = {
+                newLeads: MOCK_DATA.newLeads,
+                incomingCalls: MOCK_DATA.incomingCalls,
+                needToCall: MOCK_DATA.needToCall,
+                mowingEstimates: MOCK_DATA.mowingEstimates,
+                newMessages: MOCK_DATA.newMessages,
+                newMeetingTopics: MOCK_DATA.newMeetingTopics,
+                followUpFromMeet: MOCK_DATA.followUpFromMeet
+            };
             
-            const text = await response.text();
-            return parseCSV(text);
+            bankBalance = MOCK_DATA.bankBalance;
+            
+            // Update UI
+            displayMetricCards();
+            checkCriticalAlerts();
         }
 
-        function parseCSV(text) {
-            const lines = text.split('\n').filter(line => line.trim());
-            if (lines.length === 0) return [];
+        function displayMetricCards() {
+            const metricsGrid = document.getElementById('keyMetrics');
             
-            function parseLine(line) {
-                const result = [];
-                let current = '';
-                let inQuotes = false;
-                
-                for (let i = 0; i < line.length; i++) {
-                    const char = line[i];
-                    if (char === '"') {
-                        if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
-                            current += '"';
-                            i++;
-                        } else {
-                            inQuotes = !inQuotes;
-                        }
-                    } else if (char === ',' && !inQuotes) {
-                        result.push(current.trim());
-                        current = '';
-                    } else {
-                        current += char;
-                    }
-                }
-                result.push(current.trim());
-                return result;
-            }
-            
-            const headers = parseLine(lines[0]);
-            const data = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                const values = parseLine(lines[i]);
-                const row = {};
-                headers.forEach((header, index) => {
-                    row[header] = values[index] || '';
-                });
-                data.push(row);
-            }
-            
-            return data;
-        }
-
-        async function loadFinancialData() {
-            try {
-                const data = await fetchSheetData(SPREADSHEET_ID, TRANSACTIONS_GID);
-                
-                if (data.length > 0) {
-                    const row2 = data[0];
-                    const bankBalance = parseNumber(row2['Bank Balance']);
-                    const lastChecked = row2['Last Checked'] || 'N/A';
-                    
-                    document.getElementById('bankBalance').textContent = formatCurrency(bankBalance);
-                    document.getElementById('lastChecked').textContent = `Last Checked: ${lastChecked}`;
-                }
-                
-                let needsCategorizing = 0;
-                data.forEach(row => {
-                    const needsCat = parseNumber(row['Need Categorizing']);
-                    if (needsCat > 0) needsCategorizing += needsCat;
-                });
-                
-                document.getElementById('needsCategorizingCount').textContent = needsCategorizing;
-                const badge = document.getElementById('needsCategorizingBadge');
-                
-                if (needsCategorizing === 0) {
-                    badge.className = 'metric-badge badge-excellent';
-                    badge.textContent = '✓ All Clear';
-                    document.getElementById('needsCategorizingCard').classList.remove('alert-warning');
-                } else if (needsCategorizing <= 5) {
-                    badge.className = 'metric-badge badge-good';
-                    badge.textContent = 'Review Soon';
-                    document.getElementById('needsCategorizingCard').classList.remove('alert-warning');
-                } else {
-                    badge.className = 'metric-badge badge-warning';
-                    badge.textContent = 'Action Needed';
-                    document.getElementById('needsCategorizingCard').classList.add('alert-warning');
-                }
-                
-            } catch (error) {
-                console.error('Error loading financial data:', error);
-                document.getElementById('bankBalance').textContent = 'Error';
-                document.getElementById('needsCategorizingCount').textContent = 'Error';
-            }
-        }
-
-        async function loadEveryChatData() {
-            const content = document.getElementById('newMessagesContent');
-            content.innerHTML = '<div class="loading">Loading messages...</div>';
-            
-            try {
-                const data = await fetchSheetData(EVERYCHAT_SPREADSHEET_ID, EVERYCHAT_GID);
-                // Fix: Check for "New" or "NEW" (case-insensitive) and handle missing status
-                const newMessages = data.filter(row => {
-                    const status = (row['Status'] || '').toUpperCase();
-                    return status === 'NEW' || status === '';
-                });
-                
-                document.getElementById('newMessagesCount').textContent = newMessages.length;
-                
-                const card = document.querySelector('#newMessagesContent').closest('.metric-card');
-                if (newMessages.length === 0) {
-                    content.innerHTML = `
-                        <div style="text-align:center;padding:15px;color:var(--text-light);">
-                            <p>✅ No new messages</p>
+            const createCard = (id, icon, title, count, subtitle, alertClass = '') => {
+                const hasOverdue = (tasksData[id] || []).some(t => t.daysOld > 2);
+                return `
+                    <div class="metric-card expandable ${alertClass} ${hasOverdue ? 'alert-warning' : ''}" onclick="toggleExpand('${id}')">
+                        <div class="metric-header">
+                            <span class="metric-title">${title}</span>
+                            <span class="metric-icon expand-icon" id="${id}Icon">▼</span>
                         </div>
-                    `;
-                    card.classList.remove('alert-warning');
-                    card.classList.add('alert-info');
-                } else {
-                    const messagesHtml = newMessages.slice(0, 10).map(msg => `
-                        <div class="detail-item">
-                            <strong>📱 ${msg['From']}</strong>
-                            <div class="message-text">"${msg['Message']}"</div>
-                            <div class="message-time">${msg['Date']} ${msg['Time'] ? 'at ' + msg['Time'] : ''}</div>
+                        <div class="metric-value" id="${id}Count">${count}</div>
+                        <div class="metric-subtitle">${subtitle}</div>
+                        <div class="expandable-content" id="${id}Content">
+                            ${renderTaskList(id)}
                         </div>
-                    `).join('');
-                    
-                    content.innerHTML = messagesHtml;
-                    card.classList.remove('alert-info');
-                    card.classList.add('alert-warning');
-                }
-                
-            } catch (error) {
-                console.error('Error loading EveryChat data:', error);
-                content.innerHTML = `<div class="detail-item" style="color:var(--danger);">❌ Error: ${error.message}</div>`;
-                document.getElementById('newMessagesCount').textContent = '0';
-            }
+                    </div>
+                `;
+            };
+            
+            metricsGrid.innerHTML = `
+                ${createCard('newLeads', '📋', 'New Leads', tasksData.newLeads.length, 'Estimates needed', tasksData.newLeads.length > 0 ? 'alert-warning' : '')}
+                ${createCard('newMessages', '💬', 'New Messages', tasksData.newMessages.length, 'From EveryChat', tasksData.newMessages.length > 0 ? 'alert-info' : '')}
+                ${createCard('incomingCalls', '📞', 'Voicemails', tasksData.incomingCalls.length, 'Calls to return', tasksData.incomingCalls.length > 0 ? 'alert-info' : '')}
+                ${createCard('needToCall', '☎️', 'Need to Call', tasksData.needToCall.length, 'Outbound calls')}
+                ${createCard('mowingEstimates', '🏡', 'Mowing Estimates', tasksData.mowingEstimates.length, 'Pending quotes')}
+                <div class="metric-card ${bankBalance < 1000 ? 'alert-danger' : ''}">
+                    <div class="metric-header">
+                        <span class="metric-title">Bank Balance</span>
+                        <span class="metric-icon">🏦</span>
+                    </div>
+                    <div class="metric-value">${formatCurrency(bankBalance)}</div>
+                    <div class="metric-subtitle">Last: ${MOCK_DATA.lastChecked}</div>
+                    ${bankBalance < 1000 ? '<div class="metric-badge badge-danger">🚨 Critical Low</div>' : ''}
+                </div>
+                <div class="metric-card ${MOCK_DATA.needsCategorizing > 5 ? 'alert-warning' : ''}">
+                    <div class="metric-header">
+                        <span class="metric-title">Needs Categorizing</span>
+                        <span class="metric-icon">⚠️</span>
+                    </div>
+                    <div class="metric-value">${MOCK_DATA.needsCategorizing}</div>
+                    <div class="metric-subtitle">Uncategorized items</div>
+                    <div class="metric-badge ${MOCK_DATA.needsCategorizing === 0 ? 'badge-excellent' : MOCK_DATA.needsCategorizing <= 5 ? 'badge-good' : 'badge-warning'}">
+                        ${MOCK_DATA.needsCategorizing === 0 ? '✓ All Clear' : MOCK_DATA.needsCategorizing <= 5 ? 'Review Soon' : 'Action Needed'}
+                    </div>
+                </div>
+            `;
         }
 
-        // Note: Two-way sync functions would need server-side implementation
-        // Google Tasks API doesn't allow direct updates from client-side JavaScript
-        // You'll need to set up Zapier automations for marking tasks complete
-
-        async function loadTaskList(listId, elementId, displayName) {
-            const content = document.getElementById(`${elementId}Content`);
-            const countElement = document.getElementById(`${elementId}Count`);
+        function renderTaskList(listId) {
+            const tasks = tasksData[listId] || [];
             
-            content.innerHTML = '<div class="loading">Loading tasks...</div>';
+            if (tasks.length === 0) {
+                return '<div style="text-align:center;padding:15px;color:var(--text-light);">✅ No pending items</div>';
+            }
             
-            // This would normally call the Google Tasks API via Zapier
-            // For now, displaying static data from the earlier API calls
-            const taskData = tasksData[elementId] || [];
-            
-            countElement.textContent = taskData.length;
-            
-            if (taskData.length === 0) {
-                content.innerHTML = `<div style="text-align:center;padding:15px;color:var(--text-light);">✅ No pending ${displayName.toLowerCase()}</div>`;
-            } else {
-                const tasksHtml = taskData.map(task => `
-                    <div class="detail-item">
-                        <strong>${task.title}</strong>
-                        ${task.notes ? `<div style="margin-top:5px;">${task.notes.substring(0, 150)}${task.notes.length > 150 ? '...' : ''}</div>` : ''}
-                        ${task.due ? `<div class="due-date">📅 Due: ${new Date(task.due).toLocaleDateString()}</div>` : ''}
+            if (listId === 'newMessages') {
+                return tasks.map(msg => `
+                    <div class="detail-item ${msg.daysOld > 2 ? 'overdue-item' : ''}">
+                        <strong>📱 ${msg.from}</strong>
+                        <div class="message-text">"${msg.message}"</div>
+                        <div class="message-time">${msg.date} ${msg.time}</div>
+                        ${msg.daysOld > 2 ? `<div class="overdue">⚠️ ${msg.daysOld} days old</div>` : ''}
                     </div>
                 `).join('');
-                
-                content.innerHTML = tasksHtml;
             }
-        }
-
-        // ============================================
-        // LOAD GOOGLE TASKS DATA
-        // ============================================
-        function initializeTasksData() {
-            // New Leads (from earlier API call)
-            tasksData.newLeads = [
-                { title: "Arreola, Willie", notes: "Need to send estimate", due: "2025-12-27T00:00:00.000Z" },
-                { title: "Patti McCahill", notes: "Some pics of the project we spoke about. Merry Christmas to you and your loved ones!", due: "2025-12-24T00:00:00.000Z" },
-                { title: "Buchmaier (Robin RE/MAX Elite Prop Mgmt)", notes: "Need to send estimate", due: "2025-12-23T00:00:00.000Z" },
-                { title: "Dye, Anna", notes: "Need to send estimate", due: "2025-12-23T00:00:00.000Z" },
-                { title: "Pownall, Jerry", notes: "Need to send estimate", due: "2025-12-20T00:00:00.000Z" }
-            ];
-
-            // Incoming Calls
-            tasksData.incomingCalls = [
-                { title: "Voicemail Recap - Fort Lupton Co", notes: "Phone: +17208025204", due: null },
-                { title: "Voicemail Recap - Auto Glass Svc", notes: "Phone: +13212035036", due: null },
-                { title: "Voicemail Recap - (321) 483-9075", notes: "Unknown Caller", due: "2025-12-04T00:00:00.000Z" }
-            ];
-
-            // Need to Call List
-            tasksData.needToCall = [];
-
-            // Mowing Estimates
-            tasksData.mowingEstimates = [];
-
-            // Meeting Topics
-            tasksData.newMeetingTopics = [
-                { title: "New Meeting Topics", notes: "Meeting Description-Do not interrupt each other when speaking and explaining", due: "2025-11-29T00:00:00.000Z" }
-            ];
-
-            tasksData.followUpFromMeet = [
-                { title: "Need to buy battery", notes: "", due: "2025-10-12T00:00:00.000Z" },
-                { title: "New Meeting Topics", notes: "What to do with the Golf Cart? Should We Sell or Fix Up", due: "2025-10-07T00:00:00.000Z" },
-                { title: "What KPI's should we keep an eye on?", notes: "", due: null },
-                { title: "how much we make clear and what expenses are coming out Sandra", notes: "", due: null }
-            ];
-
-            // Update counts
-            document.getElementById('newLeadsCount').textContent = tasksData.newLeads.length;
-            document.getElementById('incomingCallsCount').textContent = tasksData.incomingCalls.length;
-            document.getElementById('needToCallCount').textContent = tasksData.needToCall.length;
-            document.getElementById('mowingEstimatesCount').textContent = tasksData.mowingEstimates.length;
-
-            // Update card colors
-            if (tasksData.newLeads.length > 0) {
-                document.querySelector('#newLeadsContent').closest('.metric-card').classList.add('alert-warning');
-            }
-            if (tasksData.incomingCalls.length > 0) {
-                document.querySelector('#incomingCallsContent').closest('.metric-card').classList.add('alert-info');
-            }
-
-            // Load content for expanded sections
-            if (expandedSections.has('newLeads')) loadTaskList(null, 'newLeads', 'New Leads');
-            if (expandedSections.has('incomingCalls')) loadTaskList(null, 'incomingCalls', 'Incoming Calls');
-            if (expandedSections.has('needToCall')) loadTaskList(null, 'needToCall', 'Calls to Make');
-            if (expandedSections.has('mowingEstimates')) loadTaskList(null, 'mowingEstimates', 'Mowing Estimates');
+            
+            return tasks.map(task => `
+                <div class="detail-item ${task.daysOld > 2 ? 'overdue-item' : ''}">
+                    <strong>${task.title}</strong>
+                    ${task.notes ? `<div style="margin-top:5px;">${task.notes.substring(0, 150)}${task.notes.length > 150 ? '...' : ''}</div>` : ''}
+                    ${task.due ? `<div class="due-date">📅 Due: ${new Date(task.due).toLocaleDateString()}</div>` : ''}
+                    ${task.daysOld > 2 ? `<div class="overdue">⚠️ ${task.daysOld} days old</div>` : ''}
+                </div>
+            `).join('');
         }
 
         // ============================================
@@ -1097,22 +1105,16 @@
                 const data = await response.json();
                 
                 const weatherCodes = {
-                    0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
-                    45: '🌫️', 48: '🌫️',
-                    51: '🌦️', 53: '🌦️', 55: '🌦️',
-                    61: '🌧️', 63: '🌧️', 65: '🌧️',
-                    71: '🌨️', 73: '🌨️', 75: '🌨️',
-                    80: '🌧️', 81: '🌧️', 82: '🌧️',
+                    0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️', 45: '🌫️', 48: '🌫️',
+                    51: '🌦️', 53: '🌦️', 55: '🌦️', 61: '🌧️', 63: '🌧️', 65: '🌧️',
+                    71: '🌨️', 73: '🌨️', 75: '🌨️', 80: '🌧️', 81: '🌧️', 82: '🌧️',
                     95: '⛈️', 96: '⛈️', 99: '⛈️'
                 };
                 
                 const weatherDesc = {
-                    0: 'Clear', 1: 'Mostly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
-                    45: 'Foggy', 48: 'Foggy',
-                    51: 'Light Drizzle', 53: 'Drizzle', 55: 'Heavy Drizzle',
-                    61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain',
-                    71: 'Light Snow', 73: 'Snow', 75: 'Heavy Snow',
-                    80: 'Rain Showers', 81: 'Rain Showers', 82: 'Heavy Rain',
+                    0: 'Clear', 1: 'Mostly Clear', 2: 'Partly Cloudy', 3: 'Overcast', 45: 'Foggy', 48: 'Foggy',
+                    51: 'Light Drizzle', 53: 'Drizzle', 55: 'Heavy Drizzle', 61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain',
+                    71: 'Light Snow', 73: 'Snow', 75: 'Heavy Snow', 80: 'Rain Showers', 81: 'Rain Showers', 82: 'Heavy Rain',
                     95: 'Thunderstorm', 96: 'Thunderstorm', 99: 'Severe Storm'
                 };
                 
@@ -1139,7 +1141,7 @@
         }
 
         // ============================================
-        // NEWS DATA (NewsAPI)
+        // NEWS DATA
         // ============================================
         async function loadNewsData() {
             const newsDisplay = document.getElementById('newsDisplay');
@@ -1147,11 +1149,11 @@
             
             try {
                 const nationalResponse = await fetch(
-                    `https://newsapi.org/v2/top-headlines?country=us&sources=associated-press,reuters,bbc-news,the-hill&pageSize=3&apiKey=${NEWS_API_KEY}`
+                    `https://newsapi.org/v2/top-headlines?country=us&apiKey=${NEWS_API_KEY}&pageSize=3`
                 );
                 
                 const localResponse = await fetch(
-                    `https://newsapi.org/v2/everything?q=Brevard+County+OR+Titusville+OR+"Space+Coast"&language=en&sortBy=publishedAt&pageSize=2&apiKey=${NEWS_API_KEY}`
+                    `https://newsapi.org/v2/everything?q=Brevard+County+OR+Titusville+OR+Space+Coast&language=en&sortBy=publishedAt&pageSize=2&apiKey=${NEWS_API_KEY}`
                 );
                 
                 if (!nationalResponse.ok || !localResponse.ok) {
@@ -1200,7 +1202,7 @@
                 
             } catch (error) {
                 console.error('News error:', error);
-                newsDisplay.innerHTML = `<div class="setup-note">❌ News Error: ${error.message}</div>`;
+                newsDisplay.innerHTML = `<div class="setup-note">❌ News temporarily unavailable</div>`;
             }
         }
 
@@ -1275,15 +1277,12 @@
             console.log('🔄 Loading dashboard data...');
             
             try {
+                loadMockData();
                 await Promise.all([
-                    loadFinancialData(),
-                    loadEveryChatData(),
                     loadWeatherData(),
                     loadNewsData(),
                     loadScriptureData()
                 ]);
-                
-                initializeTasksData();
                 
                 showAlert('✅ Dashboard updated successfully!', 'success');
                 setTimeout(() => closeAlert(), 3000);
@@ -1301,7 +1300,8 @@
         // ============================================
         // INITIALIZE
         // ============================================
-        console.log('🚀 WS Lawn Care Daily Operations Dashboard - Complete Version');
+        console.log('🚀 WS Lawn Care Daily Operations Dashboard');
+        console.log('📝 Using mock data - Deploy to web server for live data');
         loadAllData();
         
         setTimeout(() => {
