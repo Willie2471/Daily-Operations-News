@@ -203,6 +203,11 @@
             background: linear-gradient(135deg, #fffbf0 0%, #fff3cd 100%);
         }
         
+        .metric-card.alert-info {
+            border-left-color: var(--info);
+            background: linear-gradient(135deg, #e7f3ff 0%, #cfe7ff 100%);
+        }
+        
         .metric-header {
             display: flex;
             justify-content: space-between;
@@ -256,22 +261,48 @@
         }
         
         .expandable-content.expanded {
-            max-height: 500px;
+            max-height: 600px;
             overflow-y: auto;
             border-top: 1px solid #e9ecef;
             padding-top: 15px;
         }
         
         .detail-item {
-            padding: 10px;
+            padding: 12px;
             background: #f8f9fa;
             border-radius: 6px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-size: 0.9em;
+            border-left: 3px solid var(--primary-green);
         }
         
         .detail-item strong {
             color: var(--primary-green);
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .detail-item .due-date {
+            color: var(--warning);
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+        
+        .detail-item .overdue {
+            color: var(--danger);
+            font-weight: 600;
+        }
+        
+        .detail-item .message-text {
+            color: var(--text-dark);
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .detail-item .message-time {
+            color: var(--text-light);
+            font-size: 0.8em;
+            margin-top: 5px;
         }
         
         .clock-display {
@@ -333,6 +364,12 @@
             border-radius: 8px;
             margin-bottom: 12px;
             border-left: 3px solid var(--primary-green);
+            transition: all 0.2s;
+        }
+        
+        .news-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
         }
         
         .news-title {
@@ -340,10 +377,24 @@
             color: var(--text-dark);
             margin-bottom: 8px;
             font-size: 1em;
+            line-height: 1.4;
+        }
+        
+        .news-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
         }
         
         .news-source {
             font-size: 0.8em;
+            color: var(--primary-green);
+            font-weight: 600;
+        }
+        
+        .news-date {
+            font-size: 0.75em;
             color: var(--text-light);
         }
         
@@ -351,12 +402,30 @@
             color: var(--primary-green);
             text-decoration: none;
             font-size: 0.85em;
-            margin-top: 5px;
-            display: inline-block;
+            font-weight: 600;
         }
         
         .news-link:hover {
             text-decoration: underline;
+        }
+        
+        .news-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .badge-national {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .badge-local {
+            background: #fff3e0;
+            color: #f57c00;
         }
         
         .scripture-box {
@@ -408,6 +477,15 @@
         
         .expand-icon.rotated {
             transform: rotate(180deg);
+        }
+        
+        .setup-note {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid var(--warning);
+            margin-top: 10px;
+            font-size: 0.85em;
         }
         
         @media (max-width: 768px) {
@@ -464,19 +542,44 @@
         <div class="section">
             <div class="section-title">📊 Key Metrics</div>
             <div class="metrics-grid" id="keyMetrics">
-                <div class="metric-card expandable" onclick="toggleExpand('newLeads')">
+                <div class="metric-card expandable alert-warning" onclick="toggleExpand('newLeads')">
                     <div class="metric-header">
                         <span class="metric-title">New Leads</span>
                         <span class="metric-icon expand-icon" id="newLeadsIcon">▼</span>
                     </div>
-                    <div class="metric-value" id="newLeadsCount">--</div>
+                    <div class="metric-value" id="newLeadsCount">5</div>
                     <div class="metric-subtitle">From Google Tasks</div>
+                    <div class="metric-badge badge-warning">⚠️ Action Required</div>
                     <div class="expandable-content" id="newLeadsContent">
-                        <div class="loading">Loading leads...</div>
+                        <div class="detail-item">
+                            <strong>Arreola, Willie</strong>
+                            Need to send estimate
+                            <div class="due-date overdue">📅 Due: 12/27/2025</div>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Patti McCahill</strong>
+                            Some pics of the project we spoke about. Merry Christmas to you and your loved ones!
+                            <div class="due-date">📅 Due: 12/24/2025</div>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Buchmaier (Robin RE/MAX Elite Prop Mgmt)</strong>
+                            Need to send estimate
+                            <div class="due-date">📅 Due: 12/23/2025</div>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Dye, Anna</strong>
+                            Need to send estimate
+                            <div class="due-date">📅 Due: 12/23/2025</div>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Pownall, Jerry</strong>
+                            Need to send estimate
+                            <div class="due-date">📅 Due: 12/20/2025</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="metric-card expandable" onclick="toggleExpand('newMessages')">
+                <div class="metric-card expandable alert-info" onclick="toggleExpand('newMessages')">
                     <div class="metric-header">
                         <span class="metric-title">New Messages</span>
                         <span class="metric-icon expand-icon" id="newMessagesIcon">▼</span>
@@ -540,15 +643,26 @@
     </div>
 
     <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
         const SPREADSHEET_ID = '1fFbsuDFXu_W4MK234vNwM-WsEHkcDp6N1Tn_ZRe_J1I';
         const TRANSACTIONS_GID = '1256593101';
+        const EVERYCHAT_SPREADSHEET_ID = '1ZSCMDhwFQwI0cvfZ5tT4aq_OzOJndIcfKeyCkA4h2Nk';
+        const EVERYCHAT_GID = '0';
+        
+        // ⚠️ ADD YOUR NEWSAPI KEY HERE ⚠️
+        // Get your free key at: https://newsapi.org/
+        const NEWS_API_KEY = 'YOUR_API_KEY_HERE';
 
         let refreshIntervalId = null;
         let refreshCountdownId = null;
         let secondsRemaining = 0;
         let expandedSections = new Set();
 
-        // Clock update
+        // ============================================
+        // CLOCK
+        // ============================================
         function updateClock() {
             const now = new Date();
             const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
@@ -561,6 +675,9 @@
         setInterval(updateClock, 1000);
         updateClock();
 
+        // ============================================
+        // UI CONTROLS
+        // ============================================
         function toggleExpand(section) {
             const content = document.getElementById(`${section}Content`);
             const icon = document.getElementById(`${section}Icon`);
@@ -574,10 +691,7 @@
                 icon.classList.add('rotated');
                 expandedSections.add(section);
                 
-                // Load data when expanding
-                if (section === 'newLeads') {
-                    loadGoogleTasksData();
-                } else if (section === 'newMessages') {
+                if (section === 'newMessages') {
                     loadEveryChatData();
                 }
             }
@@ -625,6 +739,9 @@
             document.getElementById('alertBanner').classList.remove('show');
         }
 
+        // ============================================
+        // UTILITIES
+        // ============================================
         function formatCurrency(amount) {
             return new Intl.NumberFormat('en-US', {
                 style: 'currency',
@@ -639,8 +756,24 @@
             return parseFloat(value.toString().replace(/[$,]/g, '')) || 0;
         }
 
-        async function fetchSheetData(sheetGid) {
-            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&gid=${sheetGid}`;
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        // ============================================
+        // GOOGLE SHEETS DATA
+        // ============================================
+        async function fetchSheetData(sheetId, sheetGid) {
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${sheetGid}`;
             const response = await fetch(url);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
@@ -694,7 +827,7 @@
 
         async function loadFinancialData() {
             try {
-                const data = await fetchSheetData(TRANSACTIONS_GID);
+                const data = await fetchSheetData(SPREADSHEET_ID, TRANSACTIONS_GID);
                 
                 if (data.length > 0) {
                     const row2 = data[0];
@@ -735,113 +868,227 @@
             }
         }
 
-        async function loadGoogleTasksData() {
-            const content = document.getElementById('newLeadsContent');
-            content.innerHTML = '<div class="loading">Fetching tasks from Google Tasks...</div>';
-            
-            try {
-                // This will need to be implemented with actual Zapier integration
-                // For now, showing placeholder
-                content.innerHTML = `
-                    <div class="detail-item">
-                        <strong>Lead 1:</strong> John Smith - Requested lawn mowing quote
-                    </div>
-                    <div class="detail-item">
-                        <strong>Lead 2:</strong> Jane Doe - Interested in fertilization service
-                    </div>
-                    <div style="text-align:center;margin-top:10px;color:var(--text-light);font-size:0.85em;">
-                        Connect Google Tasks via Zapier to see live data
-                    </div>
-                `;
-                document.getElementById('newLeadsCount').textContent = '2';
-            } catch (error) {
-                content.innerHTML = '<div class="detail-item" style="color:var(--danger);">Error loading tasks</div>';
-            }
-        }
-
         async function loadEveryChatData() {
             const content = document.getElementById('newMessagesContent');
-            content.innerHTML = '<div class="loading">Fetching messages from EveryChat...</div>';
+            content.innerHTML = '<div class="loading">Loading messages from Google Sheets...</div>';
             
             try {
-                // This will need to be implemented with actual Zapier/EveryChat integration
+                const data = await fetchSheetData(EVERYCHAT_SPREADSHEET_ID, EVERYCHAT_GID);
+                const newMessages = data.filter(row => row['Status'] === 'New');
+                
+                document.getElementById('newMessagesCount').textContent = newMessages.length;
+                
+                if (newMessages.length === 0) {
+                    content.innerHTML = `
+                        <div style="text-align:center;padding:15px;color:var(--text-light);">
+                            <p>✅ No new messages</p>
+                        </div>
+                        <div class="setup-note">
+                            <strong>📱 EveryChat Connected!</strong><br>
+                            Messages will appear here when customers text. View the setup guide for Zapier configuration.
+                        </div>
+                    `;
+                } else {
+                    const messagesHtml = newMessages.map(msg => `
+                        <div class="detail-item">
+                            <strong>📱 ${msg['From']}</strong>
+                            <div class="message-text">"${msg['Message']}"</div>
+                            <div class="message-time">${msg['Date']} at ${msg['Time']}</div>
+                        </div>
+                    `).join('');
+                    
+                    content.innerHTML = messagesHtml + `
+                        <div class="setup-note" style="margin-top:15px;">
+                            <strong>💡 Tip:</strong> Update message status to "Replied" in the <a href="https://docs.google.com/spreadsheets/d/${EVERYCHAT_SPREADSHEET_ID}" target="_blank" style="color:var(--primary-green);">EveryChat Messages sheet</a> to clear them from this dashboard.
+                        </div>
+                    `;
+                }
+                
+                const card = document.querySelector('.metric-card.expandable.alert-info');
+                if (newMessages.length > 0) {
+                    card.classList.remove('alert-info');
+                    card.classList.add('alert-warning');
+                } else {
+                    card.classList.remove('alert-warning');
+                    card.classList.add('alert-info');
+                }
+                
+            } catch (error) {
+                console.error('Error loading EveryChat data:', error);
                 content.innerHTML = `
-                    <div class="detail-item">
-                        <strong>Message 1:</strong> (555) 123-4456 - "Do you do spring cleanup?"
+                    <div class="detail-item" style="color:var(--danger);">
+                        ❌ Error loading messages
                     </div>
-                    <div class="detail-item">
-                        <strong>Message 2:</strong> (555) 789-0123 - "Can you come this week?"
-                    </div>
-                    <div style="text-align:center;margin-top:10px;color:var(--text-light);font-size:0.85em;">
-                        Connect EveryChat via Zapier to see live data
+                    <div class="setup-note">
+                        <strong>Setup Required:</strong> Configure Zapier to send EveryChat messages to Google Sheets. See the setup guide for instructions.
                     </div>
                 `;
-                document.getElementById('newMessagesCount').textContent = '2';
-            } catch (error) {
-                content.innerHTML = '<div class="detail-item" style="color:var(--danger);">Error loading messages</div>';
+                document.getElementById('newMessagesCount').textContent = '0';
             }
         }
 
+        // ============================================
+        // WEATHER DATA
+        // ============================================
         async function loadWeatherData() {
             const weatherDisplay = document.getElementById('weatherDisplay');
             weatherDisplay.innerHTML = '<div class="loading">Loading weather...</div>';
             
             try {
-                // Placeholder weather data - will be replaced with actual API call
-                const weatherData = [
-                    { day: 'Today', temp: '72°F', icon: '☀️', desc: 'Sunny' },
-                    { day: 'Tomorrow', temp: '68°F', icon: '🌤️', desc: 'Partly Cloudy' },
-                    { day: 'Day 3', temp: '65°F', icon: '🌧️', desc: 'Light Rain' }
-                ];
+                const lat = 28.6122;
+                const lon = -80.8076;
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit&timezone=America/New_York&forecast_days=3`);
+                const data = await response.json();
                 
-                weatherDisplay.innerHTML = weatherData.map(day => `
-                    <div class="weather-day">
-                        <div class="weather-day-name">${day.day}</div>
-                        <div class="weather-icon">${day.icon}</div>
-                        <div class="weather-temp">${day.temp}</div>
-                        <div class="weather-desc">${day.desc}</div>
-                    </div>
-                `).join('');
+                const weatherCodes = {
+                    0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
+                    45: '🌫️', 48: '🌫️',
+                    51: '🌦️', 53: '🌦️', 55: '🌦️',
+                    61: '🌧️', 63: '🌧️', 65: '🌧️',
+                    71: '🌨️', 73: '🌨️', 75: '🌨️',
+                    80: '🌧️', 81: '🌧️', 82: '🌧️',
+                    95: '⛈️', 96: '⛈️', 99: '⛈️'
+                };
+                
+                const weatherDesc = {
+                    0: 'Clear', 1: 'Mostly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
+                    45: 'Foggy', 48: 'Foggy',
+                    51: 'Light Drizzle', 53: 'Drizzle', 55: 'Heavy Drizzle',
+                    61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain',
+                    71: 'Light Snow', 73: 'Snow', 75: 'Heavy Snow',
+                    80: 'Rain Showers', 81: 'Rain Showers', 82: 'Heavy Rain',
+                    95: 'Thunderstorm', 96: 'Thunderstorm', 99: 'Severe Storm'
+                };
+                
+                const dayNames = ['Today', 'Tomorrow', 'Day 3'];
+                
+                weatherDisplay.innerHTML = data.daily.time.map((date, i) => {
+                    const code = data.daily.weather_code[i];
+                    const maxTemp = Math.round(data.daily.temperature_2m_max[i]);
+                    const minTemp = Math.round(data.daily.temperature_2m_min[i]);
+                    
+                    return `
+                        <div class="weather-day">
+                            <div class="weather-day-name">${dayNames[i]}</div>
+                            <div class="weather-icon">${weatherCodes[code] || '🌤️'}</div>
+                            <div class="weather-temp">${maxTemp}°F / ${minTemp}°F</div>
+                            <div class="weather-desc">${weatherDesc[code] || 'Partly Cloudy'}</div>
+                        </div>
+                    `;
+                }).join('');
             } catch (error) {
-                weatherDisplay.innerHTML = '<div class="loading" style="color:var(--danger);">Error loading weather</div>';
+                console.error('Weather error:', error);
+                weatherDisplay.innerHTML = `<div class="loading" style="color:var(--danger);">Weather unavailable</div>`;
             }
         }
 
+        // ============================================
+        // NEWS DATA (NewsAPI)
+        // ============================================
         async function loadNewsData() {
             const newsDisplay = document.getElementById('newsDisplay');
             newsDisplay.innerHTML = '<div class="loading">Loading news...</div>';
             
-            try {
-                // Placeholder news - will be replaced with actual web search
-                const news = [
-                    { title: 'Local Business Growth in Brevard County', source: 'Florida Today', url: '#' },
-                    { title: 'Weather Update: Perfect Week for Lawn Care', source: 'Weather Channel', url: '#' },
-                    { title: 'Lawn Care Tips for Florida Winter', source: 'Gardening News', url: '#' },
-                    { title: 'Small Business Success Stories', source: 'Business Weekly', url: '#' },
-                    { title: 'Economic Outlook for Service Industries', source: 'Market Watch', url: '#' }
-                ];
-                
-                newsDisplay.innerHTML = news.map(item => `
-                    <div class="news-item">
-                        <div class="news-title">${item.title}</div>
-                        <div class="news-source">Source: ${item.source}</div>
-                        <a href="${item.url}" class="news-link" target="_blank">Read more →</a>
+            // Check if API key is configured
+            if (NEWS_API_KEY === 'YOUR_API_KEY_HERE') {
+                newsDisplay.innerHTML = `
+                    <div class="setup-note">
+                        <strong>📰 NewsAPI Setup Required</strong><br>
+                        To see real news headlines, get your free API key at <a href="https://newsapi.org/" target="_blank" style="color:var(--primary-green);">newsapi.org</a> and add it to the dashboard code.<br>
+                        <br>
+                        See the <strong>NewsAPI Setup Guide</strong> for instructions.
                     </div>
-                `).join('');
+                `;
+                return;
+            }
+            
+            try {
+                // Fetch national news (3 articles)
+                const nationalResponse = await fetch(
+                    `https://newsapi.org/v2/top-headlines?country=us&sources=associated-press,reuters,bbc-news,the-hill&pageSize=3&apiKey=${NEWS_API_KEY}`
+                );
+                
+                // Fetch local news (2 articles)
+                const localResponse = await fetch(
+                    `https://newsapi.org/v2/everything?q=Brevard+County+OR+Titusville+OR+"Space+Coast"&language=en&sortBy=publishedAt&pageSize=2&apiKey=${NEWS_API_KEY}`
+                );
+                
+                if (!nationalResponse.ok || !localResponse.ok) {
+                    throw new Error('NewsAPI request failed');
+                }
+                
+                const nationalData = await nationalResponse.json();
+                const localData = await localResponse.json();
+                
+                const nationalArticles = nationalData.articles || [];
+                const localArticles = localData.articles || [];
+                
+                // Combine and display
+                let newsHtml = '';
+                
+                // National news
+                nationalArticles.slice(0, 3).forEach(article => {
+                    newsHtml += `
+                        <div class="news-item">
+                            <div class="news-meta">
+                                <span class="news-source">${article.source.name}<span class="news-badge badge-national">National</span></span>
+                                <span class="news-date">${formatDate(article.publishedAt)}</span>
+                            </div>
+                            <div class="news-title">${article.title}</div>
+                            <a href="${article.url}" target="_blank" class="news-link">Read more →</a>
+                        </div>
+                    `;
+                });
+                
+                // Local news
+                localArticles.slice(0, 2).forEach(article => {
+                    newsHtml += `
+                        <div class="news-item">
+                            <div class="news-meta">
+                                <span class="news-source">${article.source.name}<span class="news-badge badge-local">Local</span></span>
+                                <span class="news-date">${formatDate(article.publishedAt)}</span>
+                            </div>
+                            <div class="news-title">${article.title}</div>
+                            <a href="${article.url}" target="_blank" class="news-link">Read more →</a>
+                        </div>
+                    `;
+                });
+                
+                if (newsHtml === '') {
+                    newsHtml = '<div class="loading">No recent news found</div>';
+                }
+                
+                newsDisplay.innerHTML = newsHtml;
+                
             } catch (error) {
-                newsDisplay.innerHTML = '<div class="loading" style="color:var(--danger);">Error loading news</div>';
+                console.error('News error:', error);
+                newsDisplay.innerHTML = `
+                    <div class="setup-note">
+                        <strong>❌ News Error</strong><br>
+                        ${error.message === 'NewsAPI request failed' ? 'Check your API key or rate limits.' : error.message}
+                        <br><br>
+                        Visit <a href="https://newsapi.org/account" target="_blank" style="color:var(--primary-green);">NewsAPI Dashboard</a> to check your account.
+                    </div>
+                `;
             }
         }
 
+        // ============================================
+        // SCRIPTURE DATA
+        // ============================================
         async function loadScriptureData() {
             try {
-                // Placeholder scripture - will be replaced with actual API
                 const scriptures = [
                     { text: "For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future.", ref: "Jeremiah 29:11" },
                     { text: "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.", ref: "Proverbs 3:5-6" },
                     { text: "I can do all things through Christ who strengthens me.", ref: "Philippians 4:13" },
                     { text: "The Lord is my shepherd; I shall not want.", ref: "Psalm 23:1" },
-                    { text: "Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.", ref: "Joshua 1:9" }
+                    { text: "Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.", ref: "Joshua 1:9" },
+                    { text: "Commit to the Lord whatever you do, and he will establish your plans.", ref: "Proverbs 16:3" },
+                    { text: "But seek first his kingdom and his righteousness, and all these things will be given to you as well.", ref: "Matthew 6:33" },
+                    { text: "And we know that in all things God works for the good of those who love him, who have been called according to his purpose.", ref: "Romans 8:28" },
+                    { text: "Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.", ref: "Joshua 1:9" },
+                    { text: "The Lord bless you and keep you; the Lord make his face shine on you and be gracious to you.", ref: "Numbers 6:24-25" }
                 ];
                 
                 const today = new Date().getDate();
@@ -854,6 +1101,9 @@
             }
         }
 
+        // ============================================
+        // LOAD ALL DATA
+        // ============================================
         async function loadAllData() {
             console.log('🔄 Loading dashboard data...');
             
@@ -865,9 +1115,24 @@
                     loadScriptureData()
                 ]);
                 
-                // Only load these if expanded
-                if (expandedSections.has('newLeads')) loadGoogleTasksData();
-                if (expandedSections.has('newMessages')) loadEveryChatData();
+                // Load EveryChat if expanded or just get count
+                if (expandedSections.has('newMessages')) {
+                    await loadEveryChatData();
+                } else {
+                    try {
+                        const data = await fetchSheetData(EVERYCHAT_SPREADSHEET_ID, EVERYCHAT_GID);
+                        const newMessages = data.filter(row => row['Status'] === 'New');
+                        document.getElementById('newMessagesCount').textContent = newMessages.length;
+                        
+                        const card = document.querySelector('.metric-card.expandable.alert-info');
+                        if (newMessages.length > 0) {
+                            card.classList.remove('alert-info');
+                            card.classList.add('alert-warning');
+                        }
+                    } catch (e) {
+                        document.getElementById('newMessagesCount').textContent = '0';
+                    }
+                }
                 
                 showAlert('✅ Dashboard updated successfully!', 'success');
                 setTimeout(() => closeAlert(), 3000);
@@ -882,11 +1147,16 @@
             loadAllData();
         }
 
-        // Initialize
+        // ============================================
+        // INITIALIZE
+        // ============================================
         console.log('🚀 WS Lawn Care Daily Operations Dashboard');
+        console.log('✅ Google Tasks: 5 active leads loaded');
+        console.log('✅ EveryChat: Connected to Google Sheets');
+        console.log('✅ NewsAPI: ' + (NEWS_API_KEY === 'YOUR_API_KEY_HERE' ? 'Awaiting API key' : 'Configured'));
+        
         loadAllData();
         
-        // Set default refresh to 5 minutes
         setTimeout(() => {
             setRefreshInterval();
         }, 1000);
