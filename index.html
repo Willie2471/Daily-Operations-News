@@ -1035,22 +1035,46 @@
         // ============================================
         async function loadFinancialData() {
             try {
+                console.log('📊 Loading financial data from Transactions sheet...');
+                console.log('Sheet ID:', CONFIG.TRANSACTIONS_SHEET_ID);
+                console.log('GID:', CONFIG.TRANSACTIONS_GID);
+                
                 const data = await fetchSheetData(CONFIG.TRANSACTIONS_SHEET_ID, CONFIG.TRANSACTIONS_GID);
+                
+                console.log('✅ Transactions data loaded:', data.length, 'rows');
+                console.log('First row data:', data[0]);
                 
                 if (data.length > 0) {
                     const row2 = data[0];
+                    console.log('Row 2 columns:', Object.keys(row2));
+                    console.log('Bank Balance value:', row2['Bank Balance']);
+                    console.log('Last Checked value:', row2['Last Checked']);
+                    
                     bankBalance = parseNumber(row2['Bank Balance']);
                     const lastChecked = row2['Last Checked'] || 'N/A';
+                    
+                    console.log('Parsed bank balance:', bankBalance);
+                    console.log('Last checked:', lastChecked);
                     
                     // Update elements if they exist
                     const balanceElement = document.getElementById('bankBalance');
                     const checkedElement = document.getElementById('lastChecked');
                     
+                    console.log('Bank balance element exists?', !!balanceElement);
+                    console.log('Last checked element exists?', !!checkedElement);
+                    
                     if (balanceElement) {
                         balanceElement.textContent = formatCurrency(bankBalance);
+                        console.log('✅ Updated bank balance display to:', formatCurrency(bankBalance));
+                    } else {
+                        console.error('❌ Bank balance element not found!');
                     }
+                    
                     if (checkedElement) {
                         checkedElement.textContent = `Last Checked: ${lastChecked}`;
+                        console.log('✅ Updated last checked display');
+                    } else {
+                        console.error('❌ Last checked element not found!');
                     }
                     
                     // Update bank card color if critical
@@ -1058,25 +1082,40 @@
                     if (bankCard) {
                         if (bankBalance < CONFIG.BANK_BALANCE_THRESHOLD) {
                             bankCard.classList.add('alert-danger');
+                            console.log('⚠️ Bank balance is critical!');
                         } else {
                             bankCard.classList.remove('alert-danger');
+                            console.log('✅ Bank balance is healthy');
                         }
                     }
                 }
                 
+                // Process Needs Categorizing
                 let needsCategorizing = 0;
-                data.forEach(row => {
+                data.forEach((row, index) => {
                     const needsCat = parseNumber(row['Need Categorizing']);
-                    if (needsCat > 0) needsCategorizing += needsCat;
+                    if (needsCat > 0) {
+                        needsCategorizing += needsCat;
+                        console.log(`Row ${index + 2} needs categorizing:`, needsCat);
+                    }
                 });
+                
+                console.log('Total needs categorizing:', needsCategorizing);
                 
                 // Update elements if they exist
                 const countElement = document.getElementById('needsCategorizingCount');
                 const badgeElement = document.getElementById('needsCategorizingBadge');
                 const cardElement = document.getElementById('needsCategorizingCard');
                 
+                console.log('Needs categorizing elements exist?', {
+                    count: !!countElement,
+                    badge: !!badgeElement,
+                    card: !!cardElement
+                });
+                
                 if (countElement) {
                     countElement.textContent = needsCategorizing;
+                    console.log('✅ Updated needs categorizing count to:', needsCategorizing);
                 }
                 
                 if (badgeElement) {
@@ -1084,19 +1123,26 @@
                         badgeElement.className = 'metric-badge badge-excellent';
                         badgeElement.textContent = '✓ All Clear';
                         if (cardElement) cardElement.classList.remove('alert-warning');
+                        console.log('✅ All categorized!');
                     } else if (needsCategorizing <= 5) {
                         badgeElement.className = 'metric-badge badge-good';
                         badgeElement.textContent = 'Review Soon';
                         if (cardElement) cardElement.classList.remove('alert-warning');
+                        console.log('✅ Review soon');
                     } else {
                         badgeElement.className = 'metric-badge badge-warning';
                         badgeElement.textContent = 'Action Needed';
                         if (cardElement) cardElement.classList.add('alert-warning');
+                        console.log('⚠️ Action needed!');
                     }
                 }
                 
+                console.log('✅ Financial data loading complete!');
+                
             } catch (error) {
-                console.error('Error loading financial data:', error);
+                console.error('❌ Error loading financial data:', error);
+                console.error('Error details:', error.message);
+                console.error('Error stack:', error.stack);
                 showAlert('Error loading financial data from Google Sheets', 'warning');
             }
         }
