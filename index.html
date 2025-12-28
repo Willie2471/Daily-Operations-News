@@ -844,8 +844,8 @@
             TASKS_SHEET_ID: '15L5o71qfSUItTJOxzXYj2Sq107IGbkKlbqaP9PUPuu0',
             TASKS_GID: '0',
             
-            // GNews API (alternative to NewsAPI with better free tier)
-            GNEWS_API_KEY: 'ecf397af9167aa6d43bbab9dbb966956', // Get free key at https://gnews.io/
+            // RSS Feeds (no API key needed!)
+            USE_RSS_FEEDS: true
             
             // Critical thresholds
             TASK_AGE_THRESHOLD: 2, // Days before task is considered overdue
@@ -1508,78 +1508,94 @@
         }
 
         // ============================================
-        // NEWS DATA - GNEWS API (Better Free Tier)
+        // NEWS DATA - RSS FEEDS (No API Key Required!)
         // ============================================
         async function loadNewsData() {
             const newsDisplay = document.getElementById('newsDisplay');
             newsDisplay.innerHTML = '<div class="loading">Loading news...</div>';
             
             try {
-                // If API key not configured, show setup message
-                if (CONFIG.GNEWS_API_KEY === 'YOUR_GNEWS_API_KEY_HERE') {
-                    newsDisplay.innerHTML = `
-                        <div class="setup-note">
-                            ℹ️ <strong>News Feed Setup Required</strong><br>
-                            To enable news feeds:<br>
-                            1. Get a free API key from <a href="https://gnews.io/" target="_blank" style="color:var(--primary-green);font-weight:600;">GNews.io</a><br>
-                            2. Replace 'YOUR_GNEWS_API_KEY_HERE' in the CONFIG section<br>
-                            3. Free tier includes 100 requests/day - plenty for this dashboard!
-                        </div>
-                    `;
-                    return;
-                }
+                // RSS2JSON is a free service that converts RSS to JSON (no API key needed!)
+                // Using multiple reliable news sources
                 
-                // GNews API - Better free tier than NewsAPI (100 requests/day)
-                // National news
-                const nationalResponse = await fetch(
-                    `https://gnews.io/api/v4/top-headlines?country=us&max=3&apikey=${CONFIG.GNEWS_API_KEY}`
+                // National news from AP News (Associated Press)
+                const nationalFeed = await fetch(
+                    `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://rsshub.app/apnews/topics/apf-topnews')}`
                 );
                 
-                // Local news for Brevard County / Space Coast
-                const localResponse = await fetch(
-                    `https://gnews.io/api/v4/search?q=Brevard+County+OR+Titusville+OR+Space+Coast&lang=en&max=2&apikey=${CONFIG.GNEWS_API_KEY}`
+                // Local Florida news from multiple sources
+                const localFeed = await fetch(
+                    `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.floridatoday.com/arcio/rss/category/news/')}`
                 );
-                
-                if (!nationalResponse.ok || !localResponse.ok) {
-                    throw new Error('News API request failed');
-                }
-                
-                const nationalData = await nationalResponse.json();
-                const localData = await localResponse.json();
-                
-                const nationalArticles = nationalData.articles || [];
-                const localArticles = localData.articles || [];
                 
                 let newsHtml = '';
                 
-                nationalArticles.slice(0, 3).forEach(article => {
-                    newsHtml += `
-                        <div class="news-item">
-                            <div class="news-meta">
-                                <span class="news-source">${article.source.name}<span class="news-badge badge-national">National</span></span>
-                                <span class="news-date">${formatDate(article.publishedAt)}</span>
-                            </div>
-                            <div class="news-title">${article.title}</div>
-                            <a href="${article.url}" target="_blank" class="news-link">Read more →</a>
-                        </div>
-                    `;
-                });
+                // Process national news
+                if (nationalFeed.ok) {
+                    const nationalData = await nationalFeed.json();
+                    if (nationalData.status === 'ok' && nationalData.items) {
+                        nationalData.items.slice(0, 3).forEach(item => {
+                            newsHtml += `
+                                <div class="news-item">
+                                    <div class="news-meta">
+                                        <span class="news-source">AP News<span class="news-badge badge-national">National</span></span>
+                                        <span class="news-date">${formatDate(item.pubDate)}</span>
+                                    </div>
+                                    <div class="news-title">${item.title}</div>
+                                    <a href="${item.link}" target="_blank" class="news-link">Read more →</a>
+                                </div>
+                            `;
+                        });
+                    }
+                }
                 
-                localArticles.slice(0, 2).forEach(article => {
-                    newsHtml += `
-                        <div class="news-item">
-                            <div class="news-meta">
-                                <span class="news-source">${article.source.name}<span class="news-badge badge-local">Local</span></span>
-                                <span class="news-date">${formatDate(article.publishedAt)}</span>
-                            </div>
-                            <div class="news-title">${article.title}</div>
-                            <a href="${article.url}" target="_blank" class="news-link">Read more →</a>
-                        </div>
-                    `;
-                });
+                // Process local Florida news
+                if (localFeed.ok) {
+                    const localData = await localFeed.json();
+                    if (localData.status === 'ok' && localData.items) {
+                        localData.items.slice(0, 2).forEach(item => {
+                            newsHtml += `
+                                <div class="news-item">
+                                    <div class="news-meta">
+                                        <span class="news-source">Florida Today<span class="news-badge badge-local">Local</span></span>
+                                        <span class="news-date">${formatDate(item.pubDate)}</span>
+                                    </div>
+                                    <div class="news-title">${item.title}</div>
+                                    <a href="${item.link}" target="_blank" class="news-link">Read more →</a>
+                                </div>
+                            `;
+                        });
+                    }
+                }
+                
+                // Fallback if no news loaded
+                if (newsHtml === '') {
+                    // Try alternative source - NPR
+                    const backupFeed = await fetch(
+                        `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://feeds.npr.org/1001/rss.xml')}`
+                    );
+                    
+                    if (backupFeed.ok) {
+                        const backupData = await backupFeed.json();
+                        if (backupData.status === 'ok' && backupData.items) {
+                            backupData.items.slice(0, 5).forEach(item => {
+                                newsHtml += `
+                                    <div class="news-item">
+                                        <div class="news-meta">
+                                            <span class="news-source">NPR News<span class="news-badge badge-national">National</span></span>
+                                            <span class="news-date">${formatDate(item.pubDate)}</span>
+                                        </div>
+                                        <div class="news-title">${item.title}</div>
+                                        <a href="${item.link}" target="_blank" class="news-link">Read more →</a>
+                                    </div>
+                                `;
+                            });
+                        }
+                    }
+                }
                 
                 if (newsHtml === '') {
-                    newsHtml = '<div class="loading">No recent news found</div>';
+                    newsHtml = '<div class="loading">No recent news available</div>';
                 }
                 
                 newsDisplay.innerHTML = newsHtml;
@@ -1589,9 +1605,7 @@
                 newsDisplay.innerHTML = `
                     <div class="setup-note">
                         ℹ️ <strong>News temporarily unavailable</strong><br>
-                        ${error.message.includes('rate limit') || error.message.includes('API') ? 
-                            'Check your GNews API key configuration or daily request limit.' : 
-                            'Unable to load news at this time. Will retry on next refresh.'}
+                        RSS feeds are experiencing connectivity issues. Will retry on next refresh.
                     </div>
                 `;
             }
