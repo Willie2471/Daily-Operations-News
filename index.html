@@ -1144,13 +1144,19 @@
                 // Load from Google Sheet if configured
                 const data = await fetchSheetData(CONFIG.TASKS_SHEET_ID, CONFIG.TASKS_GID);
                 
+                // Filter to only show tasks that are NOT completed
+                const activeTasks = data.filter(row => {
+                    const status = (row['Status'] || '').toUpperCase();
+                    return status !== 'COMPLETED' && status !== 'COMPLETE';
+                });
+                
                 // Organize tasks by list
-                tasksData.newLeads = data.filter(row => row['List'] === 'New Leads');
-                tasksData.incomingCalls = data.filter(row => row['List'] === 'Incoming Calls');
-                tasksData.needToCall = data.filter(row => row['List'] === 'Need To Call');
-                tasksData.mowingEstimates = data.filter(row => row['List'] === 'Mowing Estimates');
-                tasksData.newMeetingTopics = data.filter(row => row['List'] === 'New Meeting Topics');
-                tasksData.followUpFromMeet = data.filter(row => row['List'] === 'Follow Up');
+                tasksData.newLeads = activeTasks.filter(row => row['List'] === 'New Leads');
+                tasksData.incomingCalls = activeTasks.filter(row => row['List'] === 'Incoming Calls');
+                tasksData.needToCall = activeTasks.filter(row => row['List'] === 'Need To Call');
+                tasksData.mowingEstimates = activeTasks.filter(row => row['List'] === 'Mowing Estimates');
+                tasksData.newMeetingTopics = activeTasks.filter(row => row['List'] === 'New Meeting Topics');
+                tasksData.followUpFromMeet = activeTasks.filter(row => row['List'] === 'Follow Up');
                 
                 // Calculate age for each task
                 Object.keys(tasksData).forEach(listKey => {
