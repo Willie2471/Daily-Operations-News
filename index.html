@@ -743,18 +743,8 @@
         </div>
     </div>
 
-    <!-- New Task Modal -->
-    <div id="taskModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>➕ Create New Task</h2>
-                <button class="modal-close" onclick="closeTaskModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <iframe src="https://form-interface-22cc5c.zapier.app/" id="taskIframe"></iframe>
-            </div>
-        </div>
-    </div>
+    <!-- New Task Modal - Removed due to GitHub Pages CSP restrictions -->
+    <!-- Form opens in new tab instead -->
 
     <!-- Hidden Meeting PDF Content -->
     <div id="meetingPDF" style="display:none; padding:40px;">
@@ -820,18 +810,18 @@
         // MODAL CONTROLS
         // ============================================
         function openTaskModal() {
-            document.getElementById('taskModal').classList.add('show');
+            // GitHub Pages CSP blocks iframes from Zapier
+            // Open in new tab instead
+            window.open('https://form-interface-22cc5c.zapier.app/', '_blank');
         }
 
         function closeTaskModal() {
-            document.getElementById('taskModal').classList.remove('show');
+            // Not needed anymore since we're using new tab
+            // Keeping for compatibility
         }
 
         window.onclick = function(event) {
-            const modal = document.getElementById('taskModal');
-            if (event.target === modal) {
-                closeTaskModal();
-            }
+            // Not needed anymore but keeping for compatibility
         }
 
         // ============================================
@@ -1288,9 +1278,9 @@
                         <span class="metric-title">Bank Balance</span>
                         <span class="metric-icon">🏦</span>
                     </div>
-                    <div class="metric-value" id="bankBalance">--</div>
-                    <div class="metric-subtitle" id="lastChecked">Loading...</div>
-                    ${bankBalance < CONFIG.BANK_BALANCE_THRESHOLD ? '<div class="metric-badge badge-danger">🚨 Critical Low</div>' : ''}
+                    <div class="metric-value" id="bankBalance">${bankBalance > 0 ? formatCurrency(bankBalance) : '--'}</div>
+                    <div class="metric-subtitle" id="lastChecked">${bankBalance > 0 ? 'Loaded' : 'Loading...'}</div>
+                    ${bankBalance > 0 && bankBalance < CONFIG.BANK_BALANCE_THRESHOLD ? '<div class="metric-badge badge-danger">🚨 Critical Low</div>' : ''}
                 </div>
                 <div class="metric-card" id="needsCategorizingCard">
                     <div class="metric-header">
@@ -1555,8 +1545,11 @@
                     loadScriptureData()
                 ]);
                 
-                // Update cards with loaded data
-                displayMetricCards();
+                // DON'T call displayMetricCards again - it wipes out the values!
+                // The individual load functions already updated the values
+                
+                // Just update task counts
+                updateTaskCounts();
                 
                 // Check for critical alerts
                 checkCriticalAlerts();
@@ -1567,6 +1560,22 @@
                 console.error('Error loading data:', error);
                 showAlert(`Error loading data: ${error.message}`, 'danger');
             }
+        }
+        
+        function updateTaskCounts() {
+            // Update task counts without recreating cards
+            const updateCount = (id) => {
+                const element = document.getElementById(`${id}Count`);
+                if (element) {
+                    element.textContent = tasksData[id]?.length || 0;
+                }
+            };
+            
+            updateCount('newLeads');
+            updateCount('newMessages');
+            updateCount('incomingCalls');
+            updateCount('needToCall');
+            updateCount('mowingEstimates');
         }
 
         function refreshData() {
