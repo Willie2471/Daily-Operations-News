@@ -1252,8 +1252,18 @@
             const createCard = (id, icon, title, count, subtitle, alertClass = '') => {
                 const tasks = tasksData[id] || [];
                 const hasOverdue = tasks.some(t => t.daysOld > CONFIG.TASK_AGE_THRESHOLD);
+                const hasItems = count > 0;
+                
+                // Apply alert-info (blue) to all cards with items, alert-warning (yellow) if overdue
+                let cardClass = '';
+                if (hasOverdue) {
+                    cardClass = 'alert-warning';
+                } else if (hasItems) {
+                    cardClass = 'alert-info';
+                }
+                
                 return `
-                    <div class="metric-card expandable ${alertClass} ${hasOverdue ? 'alert-warning' : ''}" onclick="toggleExpand('${id}')">
+                    <div class="metric-card expandable ${cardClass}" onclick="toggleExpand('${id}')">
                         <div class="metric-header">
                             <span class="metric-title">${title}</span>
                             <span class="metric-icon expand-icon" id="${id}Icon">▼</span>
@@ -1268,9 +1278,9 @@
             };
             
             metricsGrid.innerHTML = `
-                ${createCard('newLeads', '📋', 'New Leads', tasksData.newLeads.length, 'Estimates needed', tasksData.newLeads.length > 0 ? 'alert-warning' : '')}
-                ${createCard('newMessages', '💬', 'New Messages', tasksData.newMessages.length, 'From EveryChat', tasksData.newMessages.length > 0 ? 'alert-info' : '')}
-                ${createCard('incomingCalls', '📞', 'Voicemails', tasksData.incomingCalls.length, 'Calls to return', tasksData.incomingCalls.length > 0 ? 'alert-info' : '')}
+                ${createCard('newLeads', '📋', 'New Leads', tasksData.newLeads.length, 'Estimates needed')}
+                ${createCard('newMessages', '💬', 'New Messages', tasksData.newMessages.length, 'From EveryChat')}
+                ${createCard('incomingCalls', '📞', 'Voicemails', tasksData.incomingCalls.length, 'Calls to return')}
                 ${createCard('needToCall', '☎️', 'Need to Call', tasksData.needToCall.length, 'Outbound calls')}
                 ${createCard('mowingEstimates', '🏡', 'Mowing Estimates', tasksData.mowingEstimates.length, 'Pending quotes')}
                 <div class="metric-card ${bankBalance < CONFIG.BANK_BALANCE_THRESHOLD ? 'alert-danger' : ''}" id="bankBalanceCard">
@@ -1297,29 +1307,46 @@
         function renderTaskList(listId) {
             const tasks = tasksData[listId] || [];
             
+            console.log(`Rendering task list for ${listId}:`, tasks.length, 'tasks');
+            
             if (tasks.length === 0) {
                 return '<div style="text-align:center;padding:15px;color:var(--text-light);">✅ No pending items</div>';
             }
             
             if (listId === 'newMessages') {
-                return tasks.map(msg => `
-                    <div class="detail-item ${msg.daysOld > CONFIG.TASK_AGE_THRESHOLD ? 'overdue-item' : ''}">
-                        <strong>📱 ${msg.from || msg.From || 'Unknown'}</strong>
-                        <div class="message-text">"${msg.message || msg.Message || ''}"</div>
-                        <div class="message-time">${msg.date || msg.Date || ''} ${msg.time || msg.Time || ''}</div>
-                        ${msg.daysOld > CONFIG.TASK_AGE_THRESHOLD ? `<div class="overdue">⚠️ ${msg.daysOld} days old</div>` : ''}
-                    </div>
-                `).join('');
+                return tasks.map(msg => {
+                    const from = msg.From || msg.from || 'Unknown';
+                    const message = msg.Message || msg.message || '';
+                    const date = msg.Date || msg.date || '';
+                    const time = msg.Time || msg.time || '';
+                    const daysOld = msg.daysOld || 0;
+                    
+                    return `
+                        <div class="detail-item ${daysOld > CONFIG.TASK_AGE_THRESHOLD ? 'overdue-item' : ''}">
+                            <strong>📱 ${from}</strong>
+                            <div class="message-text">"${message}"</div>
+                            <div class="message-time">${date} ${time}</div>
+                            ${daysOld > CONFIG.TASK_AGE_THRESHOLD ? `<div class="overdue">⚠️ ${daysOld} days old</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
             }
             
-            return tasks.map(task => `
-                <div class="detail-item ${task.daysOld > CONFIG.TASK_AGE_THRESHOLD ? 'overdue-item' : ''}">
-                    <strong>${task.title || task.Title || task.Task || ''}</strong>
-                    ${task.notes || task.Notes ? `<div style="margin-top:5px;">${(task.notes || task.Notes).substring(0, 150)}</div>` : ''}
-                    ${task['Due Date'] || task.due ? `<div class="due-date">📅 Due: ${new Date(task['Due Date'] || task.due).toLocaleDateString()}</div>` : ''}
-                    ${task.daysOld > CONFIG.TASK_AGE_THRESHOLD ? `<div class="overdue">⚠️ ${task.daysOld} days old</div>` : ''}
-                </div>
-            `).join('');
+            return tasks.map(task => {
+                const title = task.Task || task.Title || task.title || 'Untitled';
+                const notes = task.Notes || task.notes || '';
+                const dueDate = task['Due Date'] || task.due || '';
+                const daysOld = task.daysOld || 0;
+                
+                return `
+                    <div class="detail-item ${daysOld > CONFIG.TASK_AGE_THRESHOLD ? 'overdue-item' : ''}">
+                        <strong>${title}</strong>
+                        ${notes ? `<div style="margin-top:5px;">${notes.substring(0, 150)}</div>` : ''}
+                        ${dueDate ? `<div class="due-date">📅 Due: ${new Date(dueDate).toLocaleDateString()}</div>` : ''}
+                        ${daysOld > CONFIG.TASK_AGE_THRESHOLD ? `<div class="overdue">⚠️ ${daysOld} days old</div>` : ''}
+                    </div>
+                `;
+            }).join('');
         }
 
         // ============================================
@@ -1568,6 +1595,31 @@
                 const element = document.getElementById(`${id}Count`);
                 if (element) {
                     element.textContent = tasksData[id]?.length || 0;
+                }
+                
+                // Also update the expandable content with actual task data
+                const contentElement = document.getElementById(`${id}Content`);
+                if (contentElement) {
+                    contentElement.innerHTML = renderTaskList(id);
+                    console.log(`Updated expandable content for ${id}`);
+                }
+                
+                // Update card styling based on task count
+                const cardElement = document.getElementById(`${id}Count`)?.closest('.metric-card');
+                if (cardElement) {
+                    const tasks = tasksData[id] || [];
+                    const hasOverdue = tasks.some(t => t.daysOld > CONFIG.TASK_AGE_THRESHOLD);
+                    const hasItems = tasks.length > 0;
+                    
+                    // Remove all alert classes first
+                    cardElement.classList.remove('alert-info', 'alert-warning');
+                    
+                    // Add appropriate class
+                    if (hasOverdue) {
+                        cardElement.classList.add('alert-warning');
+                    } else if (hasItems) {
+                        cardElement.classList.add('alert-info');
+                    }
                 }
             };
             
