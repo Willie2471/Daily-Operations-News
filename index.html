@@ -1042,15 +1042,25 @@
                     bankBalance = parseNumber(row2['Bank Balance']);
                     const lastChecked = row2['Last Checked'] || 'N/A';
                     
-                    document.getElementById('bankBalance').textContent = formatCurrency(bankBalance);
-                    document.getElementById('lastChecked').textContent = `Last Checked: ${lastChecked}`;
+                    // Update elements if they exist
+                    const balanceElement = document.getElementById('bankBalance');
+                    const checkedElement = document.getElementById('lastChecked');
+                    
+                    if (balanceElement) {
+                        balanceElement.textContent = formatCurrency(bankBalance);
+                    }
+                    if (checkedElement) {
+                        checkedElement.textContent = `Last Checked: ${lastChecked}`;
+                    }
                     
                     // Update bank card color if critical
                     const bankCard = document.getElementById('bankBalanceCard');
-                    if (bankBalance < CONFIG.BANK_BALANCE_THRESHOLD) {
-                        bankCard.classList.add('alert-danger');
-                    } else {
-                        bankCard.classList.remove('alert-danger');
+                    if (bankCard) {
+                        if (bankBalance < CONFIG.BANK_BALANCE_THRESHOLD) {
+                            bankCard.classList.add('alert-danger');
+                        } else {
+                            bankCard.classList.remove('alert-danger');
+                        }
                     }
                 }
                 
@@ -1060,21 +1070,29 @@
                     if (needsCat > 0) needsCategorizing += needsCat;
                 });
                 
-                document.getElementById('needsCategorizingCount').textContent = needsCategorizing;
-                const badge = document.getElementById('needsCategorizingBadge');
+                // Update elements if they exist
+                const countElement = document.getElementById('needsCategorizingCount');
+                const badgeElement = document.getElementById('needsCategorizingBadge');
+                const cardElement = document.getElementById('needsCategorizingCard');
                 
-                if (needsCategorizing === 0) {
-                    badge.className = 'metric-badge badge-excellent';
-                    badge.textContent = '✓ All Clear';
-                    document.getElementById('needsCategorizingCard').classList.remove('alert-warning');
-                } else if (needsCategorizing <= 5) {
-                    badge.className = 'metric-badge badge-good';
-                    badge.textContent = 'Review Soon';
-                    document.getElementById('needsCategorizingCard').classList.remove('alert-warning');
-                } else {
-                    badge.className = 'metric-badge badge-warning';
-                    badge.textContent = 'Action Needed';
-                    document.getElementById('needsCategorizingCard').classList.add('alert-warning');
+                if (countElement) {
+                    countElement.textContent = needsCategorizing;
+                }
+                
+                if (badgeElement) {
+                    if (needsCategorizing === 0) {
+                        badgeElement.className = 'metric-badge badge-excellent';
+                        badgeElement.textContent = '✓ All Clear';
+                        if (cardElement) cardElement.classList.remove('alert-warning');
+                    } else if (needsCategorizing <= 5) {
+                        badgeElement.className = 'metric-badge badge-good';
+                        badgeElement.textContent = 'Review Soon';
+                        if (cardElement) cardElement.classList.remove('alert-warning');
+                    } else {
+                        badgeElement.className = 'metric-badge badge-warning';
+                        badgeElement.textContent = 'Action Needed';
+                        if (cardElement) cardElement.classList.add('alert-warning');
+                    }
                 }
                 
             } catch (error) {
@@ -1101,26 +1119,38 @@
                 });
                 
                 tasksData.newMessages = newMessages;
-                document.getElementById('newMessagesCount').textContent = newMessages.length;
                 
-                const card = document.querySelector('#newMessagesContent').closest('.metric-card');
-                const hasOverdue = newMessages.some(m => m.daysOld > CONFIG.TASK_AGE_THRESHOLD);
+                // Update count if element exists
+                const countElement = document.getElementById('newMessagesCount');
+                if (countElement) {
+                    countElement.textContent = newMessages.length;
+                }
                 
-                if (newMessages.length === 0) {
-                    card.classList.remove('alert-warning', 'alert-info');
-                    card.classList.add('alert-info');
-                } else if (hasOverdue) {
-                    card.classList.remove('alert-info');
-                    card.classList.add('alert-warning');
-                } else {
-                    card.classList.remove('alert-warning');
-                    card.classList.add('alert-info');
+                // Update card color if element exists
+                const contentElement = document.querySelector('#newMessagesContent');
+                if (contentElement) {
+                    const card = contentElement.closest('.metric-card');
+                    if (card) {
+                        const hasOverdue = newMessages.some(m => m.daysOld > CONFIG.TASK_AGE_THRESHOLD);
+                        
+                        card.classList.remove('alert-warning', 'alert-info');
+                        if (newMessages.length === 0) {
+                            card.classList.add('alert-info');
+                        } else if (hasOverdue) {
+                            card.classList.add('alert-warning');
+                        } else {
+                            card.classList.add('alert-info');
+                        }
+                    }
                 }
                 
             } catch (error) {
                 console.error('Error loading EveryChat data:', error);
                 tasksData.newMessages = [];
-                document.getElementById('newMessagesCount').textContent = '0';
+                const countElement = document.getElementById('newMessagesCount');
+                if (countElement) {
+                    countElement.textContent = '0';
+                }
             }
         }
 
@@ -1321,12 +1351,22 @@
                     `https://newsapi.org/v2/everything?q=Brevard+County+OR+Titusville+OR+Space+Coast&language=en&sortBy=publishedAt&pageSize=2&apiKey=${CONFIG.NEWS_API_KEY}`
                 );
                 
+                // Check for rate limit or upgrade required errors
+                if (nationalResponse.status === 426 || nationalResponse.status === 429) {
+                    throw new Error('NewsAPI rate limit reached. Using free tier - news updates limited.');
+                }
+                
                 if (!nationalResponse.ok || !localResponse.ok) {
-                    throw new Error('NewsAPI request failed');
+                    throw new Error(`NewsAPI returned status ${nationalResponse.status}`);
                 }
                 
                 const nationalData = await nationalResponse.json();
                 const localData = await localResponse.json();
+                
+                // Check for API errors in response
+                if (nationalData.status === 'error' || localData.status === 'error') {
+                    throw new Error(nationalData.message || localData.message || 'NewsAPI error');
+                }
                 
                 const nationalArticles = nationalData.articles || [];
                 const localArticles = localData.articles || [];
@@ -1367,7 +1407,12 @@
                 
             } catch (error) {
                 console.error('News error:', error);
-                newsDisplay.innerHTML = `<div class="setup-note">❌ News temporarily unavailable</div>`;
+                newsDisplay.innerHTML = `
+                    <div class="setup-note">
+                        ℹ️ <strong>News temporarily unavailable</strong><br>
+                        ${error.message.includes('rate limit') ? 'NewsAPI free tier limit reached. News will refresh tomorrow.' : 'Unable to load news at this time.'}
+                    </div>
+                `;
             }
         }
 
@@ -1442,7 +1487,19 @@
             console.log('🔄 Loading dashboard data...');
             
             try {
-                // Load all data sources in parallel
+                // Initialize empty data first
+                tasksData.newLeads = [];
+                tasksData.newMessages = [];
+                tasksData.incomingCalls = [];
+                tasksData.needToCall = [];
+                tasksData.mowingEstimates = [];
+                tasksData.newMeetingTopics = [];
+                tasksData.followUpFromMeet = [];
+                
+                // Display cards FIRST so elements exist
+                displayMetricCards();
+                
+                // Then load all data sources in parallel
                 await Promise.all([
                     loadFinancialData(),
                     loadEveryChatData(),
@@ -1452,7 +1509,7 @@
                     loadScriptureData()
                 ]);
                 
-                // Display cards with loaded data
+                // Update cards with loaded data
                 displayMetricCards();
                 
                 // Check for critical alerts
