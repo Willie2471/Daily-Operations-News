@@ -741,9 +741,6 @@
                 </div>
             </div>
             <div class="header-controls">
-                <button class="btn btn-success" onclick="openTaskModal()">
-                    ➕ New Task
-                </button>
                 <button class="btn btn-secondary" onclick="generateMeetingPDF()">
                     📋 Meeting Report
                 </button>
@@ -813,8 +810,6 @@
         </div>
     </div>
 
-    <!-- New Task Modal - Opens in new tab -->
-
     <!-- Hidden Meeting PDF Content -->
     <div id="meetingPDF" style="display:none; padding:40px;">
         <div style="text-align:center; margin-bottom:30px;">
@@ -871,24 +866,6 @@
 
         setInterval(updateClock, 1000);
         updateClock();
-
-        // ============================================
-        // MODAL CONTROLS
-        // ============================================
-        function openTaskModal() {
-            // GitHub Pages CSP blocks iframes from Zapier
-            // Open in new tab instead
-            window.open('https://form-interface-22cc5c.zapier.app/', '_blank');
-        }
-
-        function closeTaskModal() {
-            // Not needed anymore since we're using new tab
-            // Keeping for compatibility
-        }
-
-        window.onclick = function(event) {
-            // Not needed anymore but keeping for compatibility
-        }
 
         // ============================================
         // UI CONTROLS
