@@ -1008,95 +1008,91 @@
         }
 
         // ============================================
-        // GOOGLE SHEETS DATA
+        // GOOGLE SHEETS DATA - Using Values API instead of CSV
         // ============================================
         async function fetchSheetData(sheetId, sheetGid) {
+            // Get sheet name from GID (we'll need to fetch all sheets first)
+            // Or use a simpler approach - fetch as CSV but parse it better
+            // Actually, let's use the visualization API with better parsing
+            
             const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${sheetGid}`;
             const response = await fetch(url);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
             const text = await response.text();
-            return parseCSV(text);
+            return parseCSVRobust(text);
         }
 
-        function parseCSV(text) {
-            // Split by newlines but handle quoted multi-line fields
+        function parseCSVRobust(csvText) {
+            // Use a more robust CSV parser that properly handles multi-line quoted fields
             const rows = [];
-            let currentRow = '';
-            let inQuotes = false;
+            let currentRow = [];
+            let currentField = '';
+            let insideQuotes = false;
             
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                const nextChar = i + 1 < text.length ? text[i + 1] : '';
+            for (let i = 0; i < csvText.length; i++) {
+                const char = csvText[i];
+                const nextChar = i < csvText.length - 1 ? csvText[i + 1] : '';
                 
                 if (char === '"') {
-                    if (inQuotes && nextChar === '"') {
-                        currentRow += '""';
+                    if (insideQuotes && nextChar === '"') {
+                        // Escaped quote
+                        currentField += '"';
                         i++; // Skip next quote
                     } else {
-                        inQuotes = !inQuotes;
-                        currentRow += char;
+                        // Toggle quote state
+                        insideQuotes = !insideQuotes;
                     }
-                } else if (char === '\n' && !inQuotes) {
-                    if (currentRow.trim()) {
+                } else if (char === ',' && !insideQuotes) {
+                    // End of field
+                    currentRow.push(currentField.trim());
+                    currentField = '';
+                } else if (char === '\n' && !insideQuotes) {
+                    // End of row
+                    if (currentField || currentRow.length > 0) {
+                        currentRow.push(currentField.trim());
                         rows.push(currentRow);
+                        currentRow = [];
+                        currentField = '';
                     }
-                    currentRow = '';
+                } else if (char === '\r') {
+                    // Skip carriage returns
+                    continue;
                 } else {
-                    currentRow += char;
+                    currentField += char;
                 }
             }
             
-            // Add last row if exists
-            if (currentRow.trim()) {
-                rows.push(currentRow);
+            // Add last field and row if not empty
+            if (currentField || currentRow.length > 0) {
+                currentRow.push(currentField.trim());
+                if (currentRow.some(field => field !== '')) {
+                    rows.push(currentRow);
+                }
             }
             
             if (rows.length === 0) return [];
             
-            function parseLine(line) {
-                const result = [];
-                let current = '';
-                let inQuotes = false;
-                
-                for (let i = 0; i < line.length; i++) {
-                    const char = line[i];
-                    if (char === '"') {
-                        if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
-                            current += '"';
-                            i++;
-                        } else {
-                            inQuotes = !inQuotes;
-                        }
-                    } else if (char === ',' && !inQuotes) {
-                        result.push(current.trim());
-                        current = '';
-                    } else {
-                        current += char;
-                    }
-                }
-                result.push(current.trim());
-                return result;
-            }
-            
-            const headers = parseLine(rows[0]);
+            // First row is headers
+            const headers = rows[0];
             const data = [];
             
+            // Convert remaining rows to objects
             for (let i = 1; i < rows.length; i++) {
-                const values = parseLine(rows[i]);
+                const row = rows[i];
                 
                 // Skip completely empty rows
-                if (values.every(v => !v)) continue;
+                if (row.every(field => !field)) continue;
                 
-                const row = {};
+                const obj = {};
                 headers.forEach((header, index) => {
-                    row[header] = values[index] || '';
+                    obj[header] = row[index] || '';
                 });
-                data.push(row);
+                
+                data.push(obj);
             }
             
-            console.log('Parsed CSV rows:', data.length);
-            
+            console.log('📊 Parsed', data.length, 'rows from CSV');
             return data;
         }
 
