@@ -1020,8 +1020,39 @@
         }
 
         function parseCSV(text) {
-            const lines = text.split('\n').filter(line => line.trim());
-            if (lines.length === 0) return [];
+            // Split by newlines but handle quoted multi-line fields
+            const rows = [];
+            let currentRow = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const nextChar = i + 1 < text.length ? text[i + 1] : '';
+                
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        currentRow += '""';
+                        i++; // Skip next quote
+                    } else {
+                        inQuotes = !inQuotes;
+                        currentRow += char;
+                    }
+                } else if (char === '\n' && !inQuotes) {
+                    if (currentRow.trim()) {
+                        rows.push(currentRow);
+                    }
+                    currentRow = '';
+                } else {
+                    currentRow += char;
+                }
+            }
+            
+            // Add last row if exists
+            if (currentRow.trim()) {
+                rows.push(currentRow);
+            }
+            
+            if (rows.length === 0) return [];
             
             function parseLine(line) {
                 const result = [];
@@ -1048,17 +1079,23 @@
                 return result;
             }
             
-            const headers = parseLine(lines[0]);
+            const headers = parseLine(rows[0]);
             const data = [];
             
-            for (let i = 1; i < lines.length; i++) {
-                const values = parseLine(lines[i]);
+            for (let i = 1; i < rows.length; i++) {
+                const values = parseLine(rows[i]);
+                
+                // Skip completely empty rows
+                if (values.every(v => !v)) continue;
+                
                 const row = {};
                 headers.forEach((header, index) => {
                     row[header] = values[index] || '';
                 });
                 data.push(row);
             }
+            
+            console.log('Parsed CSV rows:', data.length);
             
             return data;
         }
@@ -1225,13 +1262,29 @@
                 // Load from Google Sheet
                 const data = await fetchSheetData(CONFIG.TASKS_SHEET_ID, CONFIG.TASKS_GID);
                 
+                console.log('📋 Total rows loaded from Tasks sheet:', data.length);
+                
                 // TWO-WAY SYNC: Filter to only show tasks that are NOT completed
                 // This automatically removes tasks when they're marked complete in Google Tasks
                 const activeTasks = data.filter(row => {
                     const status = (row['Status'] || '').toUpperCase().trim();
+                    const isCompleted = status.includes('COMPLET');
+                    
+                    // Debug logging for Incoming Calls
+                    if (row['List'] === 'Incoming Calls') {
+                        console.log('Incoming Call task:', {
+                            task: row['Task']?.substring(0, 30) + '...',
+                            status: row['Status'],
+                            statusUpper: status,
+                            isCompleted: isCompleted
+                        });
+                    }
+                    
                     // Filter out completed tasks (handles variations like "COMPLETED", "COMPLETE", "completed ", etc.)
-                    return !status.includes('COMPLET');
+                    return !isCompleted;
                 });
+                
+                console.log('✅ Active tasks (not completed):', activeTasks.length);
                 
                 // Organize tasks by list
                 tasksData.newLeads = activeTasks.filter(row => row['List'] === 'New Leads');
