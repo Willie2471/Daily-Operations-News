@@ -376,6 +376,31 @@
         .badge-warning { background: #fff3cd; color: #856404; }
         .badge-danger { background: #f8d7da; color: #721c24; }
         
+        .quick-access-btn {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-top: 8px;
+            background: var(--primary-green);
+            color: white !important;
+            border-radius: 6px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .quick-access-btn:hover {
+            background: var(--light-green);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .quick-access-btn:active {
+            transform: translateY(0);
+        }
+        
         .expandable-content {
             max-height: 0;
             overflow: hidden;
@@ -1317,7 +1342,7 @@
         function displayMetricCards() {
             const metricsGrid = document.getElementById('keyMetrics');
             
-            const createCard = (id, icon, title, count, subtitle, alertClass = '') => {
+            const createCard = (id, icon, title, count, subtitle, sheetLink = null) => {
                 const tasks = tasksData[id] || [];
                 const hasOverdue = tasks.some(t => t.daysOld > CONFIG.TASK_AGE_THRESHOLD);
                 const hasItems = count > 0;
@@ -1330,6 +1355,10 @@
                     cardClass = 'alert-info';
                 }
                 
+                // Add quick access button if sheet link provided
+                const quickAccessButton = sheetLink ? 
+                    `<a href="${sheetLink}" target="_blank" class="quick-access-btn" onclick="event.stopPropagation()">📊 Open Sheet</a>` : '';
+                
                 return `
                     <div class="metric-card expandable ${cardClass}" onclick="toggleExpand('${id}')">
                         <div class="metric-header">
@@ -1338,6 +1367,7 @@
                         </div>
                         <div class="metric-value" id="${id}Count">${count}</div>
                         <div class="metric-subtitle">${subtitle}</div>
+                        ${quickAccessButton}
                         <div class="expandable-content" id="${id}Content">
                             ${renderTaskList(id)}
                         </div>
@@ -1347,7 +1377,7 @@
             
             metricsGrid.innerHTML = `
                 ${createCard('newLeads', '📋', 'New Leads', tasksData.newLeads.length, 'Estimates needed')}
-                ${createCard('newMessages', '💬', 'New Messages', tasksData.newMessages.length, 'From EveryChat')}
+                ${createCard('newMessages', '💬', 'New Messages', tasksData.newMessages.length, 'From EveryChat', 'https://docs.google.com/spreadsheets/d/1ZSCMDhwFQwI0cvfZ5tT4aq_OzOJndIcfKeyCkA4h2Nk/edit?gid=0#gid=0')}
                 ${createCard('incomingCalls', '📞', 'Voicemails', tasksData.incomingCalls.length, 'Calls to return')}
                 ${createCard('needToCall', '☎️', 'Need to Call', tasksData.needToCall.length, 'Outbound calls')}
                 ${createCard('mowingEstimates', '🏡', 'Mowing Estimates', tasksData.mowingEstimates.length, 'Pending quotes')}
@@ -1367,6 +1397,7 @@
                     </div>
                     <div class="metric-value" id="needsCategorizingCount">--</div>
                     <div class="metric-subtitle">Uncategorized items</div>
+                    <a href="https://docs.google.com/spreadsheets/d/1fFbsuDFXu_W4MK234vNwM-WsEHkcDp6N1Tn_ZRe_J1I/edit?gid=353286254#gid=353286254" target="_blank" class="quick-access-btn">📊 Open Sheet</a>
                     <div class="metric-badge badge-good" id="needsCategorizingBadge">Loading...</div>
                 </div>
             `;
