@@ -1049,19 +1049,21 @@
         }
 
         function parseCSVRobust(csvText) {
-            // Use a more robust CSV parser that properly handles multi-line quoted fields
+            // Enhanced CSV parser that properly handles multi-line quoted fields
             const rows = [];
             let currentRow = [];
             let currentField = '';
             let insideQuotes = false;
+            let charCount = 0;
             
             for (let i = 0; i < csvText.length; i++) {
                 const char = csvText[i];
                 const nextChar = i < csvText.length - 1 ? csvText[i + 1] : '';
+                charCount++;
                 
                 if (char === '"') {
                     if (insideQuotes && nextChar === '"') {
-                        // Escaped quote
+                        // Escaped quote (two quotes in a row)
                         currentField += '"';
                         i++; // Skip next quote
                     } else {
@@ -1072,18 +1074,25 @@
                     // End of field
                     currentRow.push(currentField.trim());
                     currentField = '';
-                } else if (char === '\n' && !insideQuotes) {
-                    // End of row
+                } else if ((char === '\n' || char === '\r') && !insideQuotes) {
+                    // End of row (only if not inside quotes)
+                    if (char === '\r' && nextChar === '\n') {
+                        i++; // Skip \r\n combo
+                    }
+                    
                     if (currentField || currentRow.length > 0) {
                         currentRow.push(currentField.trim());
-                        rows.push(currentRow);
+                        
+                        // Only add row if it has non-empty data
+                        if (currentRow.some(field => field !== '')) {
+                            rows.push(currentRow);
+                        }
+                        
                         currentRow = [];
                         currentField = '';
                     }
-                } else if (char === '\r') {
-                    // Skip carriage returns
-                    continue;
                 } else {
+                    // Regular character
                     currentField += char;
                 }
             }
@@ -1096,18 +1105,22 @@
                 }
             }
             
-            if (rows.length === 0) return [];
+            if (rows.length === 0) {
+                console.warn('⚠️ No rows parsed from CSV');
+                return [];
+            }
+            
+            console.log('🔍 CSV parsing: Found', rows.length, 'total rows (including header)');
             
             // First row is headers
             const headers = rows[0];
             const data = [];
             
+            console.log('📋 Headers:', headers.join(', '));
+            
             // Convert remaining rows to objects
             for (let i = 1; i < rows.length; i++) {
                 const row = rows[i];
-                
-                // Skip completely empty rows
-                if (row.every(field => !field)) continue;
                 
                 const obj = {};
                 headers.forEach((header, index) => {
@@ -1115,9 +1128,14 @@
                 });
                 
                 data.push(obj);
+                
+                // Debug log each row's List and Task
+                if (obj['List']) {
+                    console.log(`  Row ${i}: List="${obj['List']}", Task="${obj['Task']?.substring(0, 30)}...", Status="${obj['Status']}"`);
+                }
             }
             
-            console.log('📊 Parsed', data.length, 'rows from CSV');
+            console.log('📊 Parsed', data.length, 'data rows from CSV');
             return data;
         }
 
@@ -1291,6 +1309,17 @@
                     const status = (row['Status'] || '').toUpperCase().trim();
                     const isCompleted = status.includes('COMPLET');
                     
+                    // Debug logging for New Leads
+                    if (row['List'] === 'New Leads') {
+                        console.log('New Lead task:', {
+                            task: row['Task']?.substring(0, 40) + '...',
+                            list: row['List'],
+                            status: row['Status'],
+                            statusUpper: status,
+                            isCompleted: isCompleted
+                        });
+                    }
+                    
                     // Debug logging for Incoming Calls
                     if (row['List'] === 'Incoming Calls') {
                         console.log('Incoming Call task:', {
@@ -1309,6 +1338,7 @@
                 
                 // Organize tasks by list
                 tasksData.newLeads = activeTasks.filter(row => row['List'] === 'New Leads');
+                console.log('📋 New Leads found:', tasksData.newLeads.length);
                 tasksData.incomingCalls = activeTasks.filter(row => row['List'] === 'Incoming Calls');
                 tasksData.needToCall = activeTasks.filter(row => row['List'] === 'Need To Call');
                 tasksData.mowingEstimates = activeTasks.filter(row => row['List'] === 'Mowing Estimates');
