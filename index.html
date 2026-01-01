@@ -1033,109 +1033,57 @@
         }
 
         // ============================================
-        // GOOGLE SHEETS DATA - Using Values API instead of CSV
+        // GOOGLE SHEETS DATA - Using TSV for better multi-line support
         // ============================================
         async function fetchSheetData(sheetId, sheetGid) {
-            // Get sheet name from GID (we'll need to fetch all sheets first)
-            // Or use a simpler approach - fetch as CSV but parse it better
-            // Actually, let's use the visualization API with better parsing
-            
-            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${sheetGid}`;
+            // Use TSV (tab-separated) format which handles multi-line cells better than CSV
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=tsv&gid=${sheetGid}`;
             const response = await fetch(url);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
             const text = await response.text();
-            return parseCSVRobust(text);
+            return parseTSV(text);
         }
 
-        function parseCSVRobust(csvText) {
-            // Enhanced CSV parser that properly handles multi-line quoted fields
-            const rows = [];
-            let currentRow = [];
-            let currentField = '';
-            let insideQuotes = false;
-            let charCount = 0;
+        function parseTSV(tsvText) {
+            // Parse tab-separated values (TSV) - simpler than CSV for multi-line fields
+            const lines = tsvText.split('\n');
             
-            for (let i = 0; i < csvText.length; i++) {
-                const char = csvText[i];
-                const nextChar = i < csvText.length - 1 ? csvText[i + 1] : '';
-                charCount++;
-                
-                if (char === '"') {
-                    if (insideQuotes && nextChar === '"') {
-                        // Escaped quote (two quotes in a row)
-                        currentField += '"';
-                        i++; // Skip next quote
-                    } else {
-                        // Toggle quote state
-                        insideQuotes = !insideQuotes;
-                    }
-                } else if (char === ',' && !insideQuotes) {
-                    // End of field
-                    currentRow.push(currentField.trim());
-                    currentField = '';
-                } else if ((char === '\n' || char === '\r') && !insideQuotes) {
-                    // End of row (only if not inside quotes)
-                    if (char === '\r' && nextChar === '\n') {
-                        i++; // Skip \r\n combo
-                    }
-                    
-                    if (currentField || currentRow.length > 0) {
-                        currentRow.push(currentField.trim());
-                        
-                        // Only add row if it has non-empty data
-                        if (currentRow.some(field => field !== '')) {
-                            rows.push(currentRow);
-                        }
-                        
-                        currentRow = [];
-                        currentField = '';
-                    }
-                } else {
-                    // Regular character
-                    currentField += char;
-                }
-            }
-            
-            // Add last field and row if not empty
-            if (currentField || currentRow.length > 0) {
-                currentRow.push(currentField.trim());
-                if (currentRow.some(field => field !== '')) {
-                    rows.push(currentRow);
-                }
-            }
-            
-            if (rows.length === 0) {
-                console.warn('⚠️ No rows parsed from CSV');
+            if (lines.length === 0) {
+                console.warn('⚠️ No lines found in TSV');
                 return [];
             }
             
-            console.log('🔍 CSV parsing: Found', rows.length, 'total rows (including header)');
-            
-            // First row is headers
-            const headers = rows[0];
-            const data = [];
-            
+            // First line is headers
+            const headers = lines[0].split('\t').map(h => h.trim());
             console.log('📋 Headers:', headers.join(', '));
             
-            // Convert remaining rows to objects
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
+            const data = [];
+            
+            // Parse each subsequent line
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                if (!line.trim()) continue; // Skip empty lines
+                
+                const values = line.split('\t').map(v => v.trim());
+                
+                // Skip completely empty rows
+                if (values.every(v => !v)) continue;
                 
                 const obj = {};
                 headers.forEach((header, index) => {
-                    obj[header] = row[index] || '';
+                    obj[header] = values[index] || '';
                 });
                 
                 data.push(obj);
                 
-                // Debug log each row's List and Task
+                // Debug log each row
                 if (obj['List']) {
-                    console.log(`  Row ${i}: List="${obj['List']}", Task="${obj['Task']?.substring(0, 30)}...", Status="${obj['Status']}"`);
+                    console.log(`  Row ${i}: List="${obj['List']}", Task="${obj['Task']?.substring(0, 40)}...", Status="${obj['Status']}"`);
                 }
             }
             
-            console.log('📊 Parsed', data.length, 'data rows from CSV');
+            console.log('📊 Parsed', data.length, 'data rows from TSV');
             return data;
         }
 
