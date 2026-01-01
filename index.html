@@ -1150,10 +1150,35 @@
                 
                 console.log('✅ Transactions data loaded:', data.length, 'rows');
                 
-                if (data.length > 0) {
-                    const row2 = data[0];
-                    bankBalance = parseNumber(row2['Bank Balance']);
-                    const lastChecked = row2['Last Checked'] || 'N/A';
+                // SMART SEARCH: Find the row that has Bank Balance data
+                // (Don't assume it's always row 2, since Tiller adds new rows at the top)
+                let balanceRow = null;
+                for (let i = 0; i < data.length; i++) {
+                    const row = data[i];
+                    const balance = row['Bank Balance'];
+                    const lastChecked = row['Last Checked'];
+                    
+                    // Found the summary row if it has both Bank Balance and Last Checked
+                    if (balance && lastChecked) {
+                        balanceRow = row;
+                        console.log(`📍 Found Bank Balance data in row ${i + 2} of sheet`);
+                        break;
+                    }
+                    
+                    // Alternative: Just look for any row with Bank Balance populated
+                    if (balance && parseNumber(balance) > 0) {
+                        balanceRow = row;
+                        console.log(`📍 Found Bank Balance data in row ${i + 2} of sheet`);
+                        break;
+                    }
+                }
+                
+                if (balanceRow) {
+                    bankBalance = parseNumber(balanceRow['Bank Balance']);
+                    const lastChecked = balanceRow['Last Checked'] || 'N/A';
+                    
+                    console.log('💰 Bank Balance:', formatCurrency(bankBalance));
+                    console.log('📅 Last Checked:', lastChecked);
                     
                     // Update elements if they exist
                     const balanceElement = document.getElementById('bankBalance');
@@ -1176,7 +1201,10 @@
                             bankCard.classList.remove('alert-danger');
                         }
                     }
+                } else {
+                    console.warn('⚠️ Could not find Bank Balance data in Transactions sheet');
                 }
+                
                 
                 // Process Needs Categorizing
                 let needsCategorizing = 0;
