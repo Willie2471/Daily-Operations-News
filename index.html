@@ -454,6 +454,22 @@
             border-left-color: var(--danger);
         }
         
+        .detail-item.warning-item {
+            background: #fffbf0;
+            border-left-color: var(--warning);
+        }
+        
+        .repeat-badge {
+            display: inline-block;
+            background: var(--info);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
         .detail-item strong {
             color: var(--primary-green);
             display: block;
@@ -957,9 +973,15 @@
             TASKS_SHEET_ID: '15L5o71qfSUItTJOxzXYj2Sq107IGbkKlbqaP9PUPuu0',
             TASKS_GID: '0',
             
+            // Reminders Sheet
+            REMINDERS_SHEET_ID: '1OnOYau0iCtl_W1br9wwaAR4A8pOjzCujG977JY4B558',
+            REMINDERS_GID: '0',
+            
             // Critical thresholds
             TASK_AGE_THRESHOLD: 2, // Days before task is considered overdue
-            BANK_BALANCE_THRESHOLD: 1000 // Minimum safe balance
+            BANK_BALANCE_THRESHOLD: 1000, // Minimum safe balance
+            REMINDER_URGENT_DAYS: 1, // Show urgent alert 1 day before due
+            REMINDER_WARNING_DAYS: 4 // Show warning alert 4 days before due
         };
 
         let refreshIntervalId = null;
@@ -967,6 +989,7 @@
         let secondsRemaining = 0;
         let expandedSections = new Set();
         let tasksData = {};
+        let remindersData = [];
         let bankBalance = 0;
         let criticalAlerts = [];
 
@@ -1128,6 +1151,18 @@
             checkTaskAge(tasksData.mowingEstimates || [], 'Mowing Estimate');
             checkTaskAge(tasksData.newMessages || [], 'New Message');
             checkTaskAge(tasksData.incomingCalls || [], 'Voicemail');
+            
+            // Check urgent reminders (1 day or less)
+            remindersData.forEach(reminder => {
+                if (reminder.urgency === 'urgent') {
+                    const title = reminder.Reminder || reminder.Title || 'Reminder';
+                    const daysText = reminder.daysUntil === 0 ? 'DUE TODAY' : reminder.daysUntil === 1 ? 'DUE TOMORROW' : `${reminder.daysUntil} days`;
+                    criticalAlerts.push(`🚨 Reminder: "${title}" - ${daysText}!`);
+                } else if (reminder.urgency === 'warning') {
+                    const title = reminder.Reminder || reminder.Title || 'Reminder';
+                    criticalAlerts.push(`⚠️ Reminder: "${title}" - ${reminder.daysUntil} days until due`);
+                }
+            });
             
             // Display critical alerts
             const alertsDiv = document.getElementById('criticalAlerts');
@@ -1492,6 +1527,123 @@
         }
 
         // ============================================
+        // LOAD REMINDERS DATA WITH SMART REPEAT LOGIC
+        // ============================================
+        async function loadRemindersData() {
+            try {
+                console.log('📅 Loading reminders data...');
+                
+                const data = await fetchSheetData(CONFIG.REMINDERS_SHEET_ID, CONFIG.REMINDERS_GID);
+                
+                console.log('✅ Reminders data loaded:', data.length, 'rows');
+                
+                const now = new Date();
+                now.setHours(0, 0, 0, 0); // Start of today
+                
+                // Filter and process reminders
+                remindersData = data.filter(row => {
+                    const status = (row['Status'] || '').toUpperCase().trim();
+                    
+                    // Skip completed reminders
+                    if (status.includes('COMPLET')) {
+                        return false;
+                    }
+                    
+                    // Parse due date
+                    const dueDateStr = row['Due Date'] || row['DueDate'] || row['due_date'];
+                    if (!dueDateStr) return false;
+                    
+                    const dueDate = new Date(dueDateStr);
+                    dueDate.setHours(0, 0, 0, 0);
+                    
+                    // Check if reminder is past due
+                    if (dueDate < now) {
+                        // Past due - only keep if it repeats
+                        const repeat = (row['Repeat'] || row['repeat'] || '').toString().toLowerCase();
+                        const isRepeating = repeat === 'true' || repeat === 'yes' || repeat === '1';
+                        
+                        if (isRepeating) {
+                            // Calculate next occurrence
+                            const frequency = (row['Repeat Frequency'] || row['RepeatFrequency'] || '').toLowerCase();
+                            const nextDue = calculateNextDueDate(dueDate, frequency, now);
+                            
+                            if (nextDue) {
+                                row['originalDueDate'] = dueDateStr;
+                                row['Due Date'] = nextDue.toISOString().split('T')[0];
+                                row['isRepeating'] = true;
+                                row['frequency'] = frequency;
+                                return true; // Keep this repeating reminder
+                            }
+                        }
+                        return false; // Drop past due non-repeating reminders
+                    }
+                    
+                    return true; // Keep future reminders
+                }).map(row => {
+                    // Calculate days until due
+                    const dueDateStr = row['Due Date'];
+                    const dueDate = new Date(dueDateStr);
+                    dueDate.setHours(0, 0, 0, 0);
+                    
+                    const daysUntil = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+                    
+                    row.daysUntil = daysUntil;
+                    row.dueDate = dueDate;
+                    
+                    // Determine urgency level
+                    if (daysUntil <= CONFIG.REMINDER_URGENT_DAYS) {
+                        row.urgency = 'urgent';
+                    } else if (daysUntil <= CONFIG.REMINDER_WARNING_DAYS) {
+                        row.urgency = 'warning';
+                    } else {
+                        row.urgency = 'normal';
+                    }
+                    
+                    return row;
+                });
+                
+                // Sort by due date (soonest first)
+                remindersData.sort((a, b) => a.dueDate - b.dueDate);
+                
+                console.log('📋 Active reminders:', remindersData.length);
+                console.log('  - Urgent (1 day):', remindersData.filter(r => r.urgency === 'urgent').length);
+                console.log('  - Warning (4 days):', remindersData.filter(r => r.urgency === 'warning').length);
+                
+            } catch (error) {
+                console.error('❌ Error loading reminders data:', error);
+                remindersData = [];
+            }
+        }
+        
+        // Calculate next due date for repeating reminders
+        function calculateNextDueDate(originalDate, frequency, fromDate) {
+            const nextDate = new Date(originalDate);
+            
+            // Keep adding the frequency interval until we're past fromDate
+            while (nextDate < fromDate) {
+                switch (frequency) {
+                    case 'daily':
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        break;
+                    case 'weekly':
+                        nextDate.setDate(nextDate.getDate() + 7);
+                        break;
+                    case 'monthly':
+                        nextDate.setMonth(nextDate.getMonth() + 1);
+                        break;
+                    case 'annually':
+                    case 'yearly':
+                        nextDate.setFullYear(nextDate.getFullYear() + 1);
+                        break;
+                    default:
+                        return null; // Unknown frequency
+                }
+            }
+            
+            return nextDate;
+        }
+
+        // ============================================
         // DISPLAY METRIC CARDS
         // ============================================
         function displayMetricCards() {
@@ -1530,12 +1682,48 @@
                 `;
             };
             
+            // Special card for Reminders with urgency indicators
+            const createRemindersCard = () => {
+                const urgentCount = remindersData.filter(r => r.urgency === 'urgent').length;
+                const warningCount = remindersData.filter(r => r.urgency === 'warning').length;
+                const totalCount = remindersData.length;
+                
+                let cardClass = '';
+                if (urgentCount > 0) {
+                    cardClass = 'alert-danger';
+                } else if (warningCount > 0) {
+                    cardClass = 'alert-warning';
+                } else if (totalCount > 0) {
+                    cardClass = 'alert-info';
+                }
+                
+                const quickAccessButton = '<a href="https://docs.google.com/spreadsheets/d/1OnOYau0iCtl_W1br9wwaAR4A8pOjzCujG977JY4B558/edit?gid=0#gid=0" target="_blank" class="quick-access-btn" onclick="event.stopPropagation()">📊 Open Sheet</a>';
+                
+                return `
+                    <div class="metric-card expandable ${cardClass}" onclick="toggleExpand('reminders')">
+                        <div class="metric-header">
+                            <span class="metric-title">Reminders</span>
+                            <span class="metric-icon expand-icon" id="remindersIcon">▼</span>
+                        </div>
+                        <div class="metric-value" id="remindersCount">${totalCount}</div>
+                        <div class="metric-subtitle">
+                            ${urgentCount > 0 ? `🚨 ${urgentCount} urgent` : warningCount > 0 ? `⚠️ ${warningCount} soon` : 'Upcoming reminders'}
+                        </div>
+                        ${quickAccessButton}
+                        <div class="expandable-content" id="remindersContent">
+                            ${renderRemindersList()}
+                        </div>
+                    </div>
+                `;
+            };
+            
             metricsGrid.innerHTML = `
                 ${createCard('newLeads', '📋', 'New Leads', tasksData.newLeads.length, 'Estimates needed')}
                 ${createCard('newMessages', '💬', 'New Messages', tasksData.newMessages.length, 'From EveryChat', 'https://docs.google.com/spreadsheets/d/1ZSCMDhwFQwI0cvfZ5tT4aq_OzOJndIcfKeyCkA4h2Nk/edit?gid=0#gid=0')}
                 ${createCard('incomingCalls', '📞', 'Voicemails', tasksData.incomingCalls.length, 'Calls to return')}
                 ${createCard('needToCall', '☎️', 'Need to Call', tasksData.needToCall.length, 'Outbound calls')}
                 ${createCard('mowingEstimates', '🏡', 'Mowing Estimates', tasksData.mowingEstimates.length, 'Pending quotes')}
+                ${createRemindersCard()}
                 <div class="metric-card ${bankBalance < CONFIG.BANK_BALANCE_THRESHOLD ? 'alert-danger' : ''}" id="bankBalanceCard">
                     <div class="metric-header">
                         <span class="metric-title">Bank Balance</span>
@@ -1596,6 +1784,51 @@
                         ${notes ? `<div style="margin-top:5px;">${notes.substring(0, 150)}</div>` : ''}
                         ${dueDate ? `<div class="due-date">📅 Due: ${new Date(dueDate).toLocaleDateString()}</div>` : ''}
                         ${daysOld > CONFIG.TASK_AGE_THRESHOLD ? `<div class="overdue">⚠️ ${daysOld} days old</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderRemindersList() {
+            if (remindersData.length === 0) {
+                return '<div style="text-align:center;padding:15px;color:var(--text-light);">✅ No upcoming reminders</div>';
+            }
+            
+            return remindersData.map(reminder => {
+                const title = reminder.Reminder || reminder.reminder || reminder.Title || 'Untitled';
+                const notes = reminder.Notes || reminder.notes || '';
+                const dueDate = reminder['Due Date'] || reminder.DueDate || '';
+                const daysUntil = reminder.daysUntil;
+                const urgency = reminder.urgency;
+                const isRepeating = reminder.isRepeating;
+                const frequency = reminder.frequency;
+                
+                // Urgency styling
+                let urgencyClass = '';
+                let urgencyIcon = '';
+                let urgencyText = '';
+                
+                if (urgency === 'urgent') {
+                    urgencyClass = 'overdue-item';
+                    urgencyIcon = '🚨';
+                    urgencyText = daysUntil === 0 ? 'DUE TODAY!' : daysUntil === 1 ? 'DUE TOMORROW!' : `${daysUntil} days`;
+                } else if (urgency === 'warning') {
+                    urgencyClass = 'warning-item';
+                    urgencyIcon = '⚠️';
+                    urgencyText = `${daysUntil} days`;
+                } else {
+                    urgencyIcon = '📅';
+                    urgencyText = `${daysUntil} days`;
+                }
+                
+                // Repeat indicator
+                const repeatBadge = isRepeating ? `<span class="repeat-badge">🔁 ${frequency}</span>` : '';
+                
+                return `
+                    <div class="detail-item ${urgencyClass}">
+                        <strong>${urgencyIcon} ${title}</strong> ${repeatBadge}
+                        ${notes ? `<div style="margin-top:5px;font-size:0.9em;color:var(--text-light);">${notes.substring(0, 100)}</div>` : ''}
+                        <div class="due-date">📅 Due: ${new Date(dueDate).toLocaleDateString()} (${urgencyText})</div>
                     </div>
                 `;
             }).join('');
@@ -1901,6 +2134,7 @@
                 tasksData.mowingEstimates = [];
                 tasksData.newMeetingTopics = [];
                 tasksData.followUpFromMeet = [];
+                remindersData = [];
                 
                 // Display cards FIRST so elements exist
                 displayMetricCards();
@@ -1910,6 +2144,7 @@
                     loadFinancialData(),
                     loadEveryChatData(),
                     loadTasksData(),
+                    loadRemindersData(),
                     loadCurrentWeather(),
                     loadWeatherData(),
                     loadNewsData(),
