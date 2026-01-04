@@ -1155,11 +1155,11 @@
             // Check urgent reminders (1 day or less)
             remindersData.forEach(reminder => {
                 if (reminder.urgency === 'urgent') {
-                    const title = reminder.Reminder || reminder.Title || 'Reminder';
+                    const title = reminder['Name Your Reminder'] || reminder.Reminder || reminder.Title || 'Reminder';
                     const daysText = reminder.daysUntil === 0 ? 'DUE TODAY' : reminder.daysUntil === 1 ? 'DUE TOMORROW' : `${reminder.daysUntil} days`;
                     criticalAlerts.push(`🚨 Reminder: "${title}" - ${daysText}!`);
                 } else if (reminder.urgency === 'warning') {
-                    const title = reminder.Reminder || reminder.Title || 'Reminder';
+                    const title = reminder['Name Your Reminder'] || reminder.Reminder || reminder.Title || 'Reminder';
                     criticalAlerts.push(`⚠️ Reminder: "${title}" - ${reminder.daysUntil} days until due`);
                 }
             });
@@ -1543,31 +1543,45 @@
                 // Filter and process reminders
                 remindersData = data.filter(row => {
                     const status = (row['Status'] || '').toUpperCase().trim();
+                    const title = row['Name Your Reminder'] || row['Reminder'] || 'Untitled';
+                    
+                    console.log(`  Checking reminder: "${title}", Status: "${status}"`);
                     
                     // Skip completed reminders
                     if (status.includes('COMPLET')) {
+                        console.log(`    ❌ Filtered: Status contains COMPLET`);
                         return false;
                     }
                     
                     // Parse due date
                     const dueDateStr = row['Due Date'] || row['DueDate'] || row['due_date'];
-                    if (!dueDateStr) return false;
+                    if (!dueDateStr) {
+                        console.log(`    ❌ Filtered: No due date found`);
+                        return false;
+                    }
+                    
+                    console.log(`    Due Date: ${dueDateStr}`);
                     
                     const dueDate = new Date(dueDateStr);
                     dueDate.setHours(0, 0, 0, 0);
                     
                     // Check if reminder is past due
                     if (dueDate < now) {
+                        console.log(`    ⚠️ Past due - checking if repeating...`);
                         // Past due - only keep if it repeats
                         const repeat = (row['Repeat'] || row['repeat'] || '').toString().toLowerCase();
                         const isRepeating = repeat === 'true' || repeat === 'yes' || repeat === '1';
                         
+                        console.log(`    Repeat: "${row['Repeat']}", isRepeating: ${isRepeating}`);
+                        
                         if (isRepeating) {
                             // Calculate next occurrence
                             const frequency = (row['Repeat Frequency'] || row['RepeatFrequency'] || '').toLowerCase();
+                            console.log(`    Frequency: "${frequency}"`);
                             const nextDue = calculateNextDueDate(dueDate, frequency, now);
                             
                             if (nextDue) {
+                                console.log(`    ✅ Kept: Next due ${nextDue.toISOString().split('T')[0]}`);
                                 row['originalDueDate'] = dueDateStr;
                                 row['Due Date'] = nextDue.toISOString().split('T')[0];
                                 row['isRepeating'] = true;
@@ -1575,8 +1589,11 @@
                                 return true; // Keep this repeating reminder
                             }
                         }
+                        console.log(`    ❌ Filtered: Past due and not repeating`);
                         return false; // Drop past due non-repeating reminders
                     }
+                    
+                    console.log(`    ✅ Kept: Future reminder`);
                     
                     return true; // Keep future reminders
                 }).map(row => {
@@ -1795,8 +1812,8 @@
             }
             
             return remindersData.map(reminder => {
-                const title = reminder.Reminder || reminder.reminder || reminder.Title || 'Untitled';
-                const notes = reminder.Notes || reminder.notes || '';
+                const title = reminder['Name Your Reminder'] || reminder.Reminder || reminder.reminder || reminder.Title || 'Untitled';
+                const notes = reminder['Reminder Description'] || reminder.Notes || reminder.notes || '';
                 const dueDate = reminder['Due Date'] || reminder.DueDate || '';
                 const daysUntil = reminder.daysUntil;
                 const urgency = reminder.urgency;
