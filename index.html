@@ -2158,7 +2158,6 @@
                 
                 // Then load all data sources in parallel
                 await Promise.all([
-                    loadFinancialData(),
                     loadEveryChatData(),
                     loadTasksData(),
                     loadRemindersData(),
@@ -2170,6 +2169,9 @@
                 
                 // Refresh cards with loaded data
                 displayMetricCards();
+                
+                // Load financial data AFTER cards are created (so updates persist)
+                await loadFinancialData();
                 
                 // Update task counts
                 updateTaskCounts();
