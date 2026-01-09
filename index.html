@@ -760,9 +760,11 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            z-index: 10;
+            z-index: 1000;
             display: flex;
             gap: 5px;
+            flex-wrap: wrap;
+            max-width: 600px;
         }
         
         .radar-btn {
@@ -775,11 +777,19 @@
             font-weight: 600;
             font-size: 0.9em;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+            pointer-events: auto;
         }
         
         .radar-btn:hover {
             background: var(--primary-green);
             color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .radar-btn:active {
+            transform: translateY(0);
         }
         
         .current-weather-box {
@@ -1009,9 +1019,9 @@
                 <div class="radar-controls">
                     <button class="radar-btn" onclick="zoomRadar('out')">➖ Zoom Out</button>
                     <button class="radar-btn" onclick="zoomRadar('in')">➕ Zoom In</button>
-                    <button class="radar-btn" onclick="toggleRadarLayer('rain')">🌧️ Rain</button>
-                    <button class="radar-btn" onclick="toggleRadarLayer('clouds')">☁️ Clouds</button>
-                    <button class="radar-btn" onclick="toggleRadarLayer('temp')">🌡️ Temp</button>
+                    <button class="radar-btn" onclick="changeRadarLayer('radar')">🌧️ Rain</button>
+                    <button class="radar-btn" onclick="changeRadarLayer('clouds')">☁️ Clouds</button>
+                    <button class="radar-btn" onclick="changeRadarLayer('temp')">🌡️ Temp</button>
                 </div>
                 <iframe 
                     id="radarFrame"
@@ -1085,7 +1095,7 @@
         // WEATHER RADAR MODAL
         // ============================================
         let currentZoomLevel = 8; // Default zoom for Titusville area
-        let currentRadarLayer = 'radar'; // Default layer: radar, clouds, temp
+        let currentRadarLayer = 'radar'; // Track current layer
         
         function openWeatherRadar() {
             const modal = document.getElementById('weatherRadarModal');
@@ -1095,14 +1105,13 @@
             const lat = 28.6122;
             const lon = -80.8076;
             
-            // Use Windy.com embed with forecast capability
-            // Removed calendar=now to enable future forecast slider
-            // Added timestamp parameter to show current+future
-            const radarUrl = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&width=100%&height=600&zoom=${currentZoomLevel}&level=surface&overlay=${currentRadarLayer}&product=${currentRadarLayer}&menu=&message=true&marker=&calendar=12&pressure=&type=map&location=coordinates&detail=true&metricWind=default&metricTemp=default&radarRange=-1`;
+            // Clean Windy embed - no timeline slider, just clean interactive radar
+            const radarUrl = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=${currentZoomLevel}&level=surface&overlay=${currentRadarLayer}&menu=&message=&marker=&pressure=&type=map&location=coordinates&metricWind=mph&metricTemp=°F`;
             
             radarFrame.src = radarUrl;
             modal.classList.add('show');
         }
+        
         
         function closeWeatherRadar() {
             const modal = document.getElementById('weatherRadarModal');
@@ -1127,29 +1136,23 @@
             const lat = 28.6122;
             const lon = -80.8076;
             const radarFrame = document.getElementById('radarFrame');
-            const radarUrl = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&width=100%&height=600&zoom=${currentZoomLevel}&level=surface&overlay=${currentRadarLayer}&product=${currentRadarLayer}&menu=&message=true&marker=&calendar=12&pressure=&type=map&location=coordinates&detail=true&metricWind=default&metricTemp=default&radarRange=-1`;
+            const radarUrl = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=${currentZoomLevel}&level=surface&overlay=${currentRadarLayer}&menu=&message=&marker=&pressure=&type=map&location=coordinates&metricWind=mph&metricTemp=°F`;
             
             radarFrame.src = radarUrl;
         }
         
-        function toggleRadarLayer(layer) {
-            // Map button clicks to Windy overlay types
-            const layerMap = {
-                'rain': 'radar',
-                'clouds': 'clouds',
-                'temp': 'temp'
-            };
-            
-            currentRadarLayer = layerMap[layer] || 'radar';
+        function changeRadarLayer(layer) {
+            currentRadarLayer = layer;
             
             // Reload radar with new layer
             const lat = 28.6122;
             const lon = -80.8076;
             const radarFrame = document.getElementById('radarFrame');
-            const radarUrl = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&width=100%&height=600&zoom=${currentZoomLevel}&level=surface&overlay=${currentRadarLayer}&product=${currentRadarLayer}&menu=&message=true&marker=&calendar=12&pressure=&type=map&location=coordinates&detail=true&metricWind=default&metricTemp=default&radarRange=-1`;
+            const radarUrl = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=${currentZoomLevel}&level=surface&overlay=${layer}&menu=&message=&marker=&pressure=&type=map&location=coordinates&metricWind=mph&metricTemp=°F`;
             
             radarFrame.src = radarUrl;
         }
+        
         
         function closeWeatherAlert() {
             document.getElementById('weatherAlertBanner').classList.remove('show');
