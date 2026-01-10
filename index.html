@@ -191,7 +191,7 @@
             background: white;
             padding: 20px 30px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
             margin-bottom: 30px;
             border-left: 5px solid var(--danger);
             display: none;
@@ -199,12 +199,6 @@
         
         .critical-alerts.show {
             display: block;
-            animation: pulse 2s ease-in-out infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3); }
-            50% { box-shadow: 0 4px 16px rgba(231, 76, 60, 0.6); }
         }
         
         .critical-alerts h2 {
@@ -843,12 +837,6 @@
         
         .weather-alert-icon {
             font-size: 1.8em;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
         }
         
         .weather-alert-text {
