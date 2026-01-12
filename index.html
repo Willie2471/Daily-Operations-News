@@ -1246,7 +1246,8 @@
             const checkTaskAge = (tasks, category) => {
                 tasks.forEach(task => {
                     if (task.daysOld > CONFIG.TASK_AGE_THRESHOLD) {
-                        criticalAlerts.push(`⏰ ${category}: "${task.title}" is ${task.daysOld} days old`);
+                        const title = task.Task || task.Title || task.title || 'Untitled';
+                        criticalAlerts.push(`⏰ ${category}: "${title}" is ${task.daysOld} days old`);
                     }
                 });
             };
