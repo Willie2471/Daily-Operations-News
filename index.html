@@ -892,6 +892,26 @@
         /* Calendar Styles */
         .calendar-container {
             padding: 20px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        
+        .calendar-container::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        .calendar-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .calendar-container::-webkit-scrollbar-thumb {
+            background: var(--primary-green);
+            border-radius: 10px;
+        }
+        
+        .calendar-container::-webkit-scrollbar-thumb:hover {
+            background: #2d5016;
         }
         
         .calendar-nav {
