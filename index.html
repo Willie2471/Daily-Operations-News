@@ -943,6 +943,37 @@
             transform: translateY(-2px);
         }
         
+        .calendar-filters {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            background: white;
+            border: 2px solid #e9ecef;
+            color: var(--text-dark);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            border-color: var(--primary-green);
+            background: #f0f8f0;
+        }
+        
+        .filter-btn.active {
+            background: var(--primary-green);
+            color: white;
+            border-color: var(--primary-green);
+        }
+        
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -1235,6 +1266,20 @@
                     <h3 id="calendarMonthYear">January 2026</h3>
                     <button class="calendar-nav-btn" onclick="changeMonth(1)">Next ▶</button>
                 </div>
+                <div class="calendar-filters">
+                    <button class="filter-btn active" onclick="setCalendarFilter('all')" id="filterAll">
+                        All Types
+                    </button>
+                    <button class="filter-btn" onclick="setCalendarFilter('payment')" id="filterPayment">
+                        💳 Payment
+                    </button>
+                    <button class="filter-btn" onclick="setCalendarFilter('personal')" id="filterPersonal">
+                        👤 Personal
+                    </button>
+                    <button class="filter-btn" onclick="setCalendarFilter('work')" id="filterWork">
+                        💼 Work
+                    </button>
+                </div>
                 <div class="calendar-grid" id="calendarGrid">
                     <div class="loading">Loading calendar...</div>
                 </div>
@@ -1243,6 +1288,9 @@
                     <div class="legend-item"><span class="legend-dot warning"></span> Warning (4 days)</div>
                     <div class="legend-item"><span class="legend-dot normal"></span> Normal</div>
                     <div class="legend-item"><span class="legend-dot repeating"></span> 🔁 Repeating</div>
+                    <div class="legend-item">💳 Payment</div>
+                    <div class="legend-item">👤 Personal</div>
+                    <div class="legend-item">💼 Work</div>
                 </div>
             </div>
         </div>
@@ -1345,6 +1393,7 @@
         // ============================================
         let currentCalendarMonth = new Date().getMonth();
         let currentCalendarYear = new Date().getFullYear();
+        let currentCalendarFilter = 'all'; // Filter: all, payment, personal, work
         
         function openCalendar() {
             const modal = document.getElementById('calendarModal');
@@ -1373,6 +1422,18 @@
                 currentCalendarYear--;
             }
             
+            renderCalendar();
+        }
+        
+        function setCalendarFilter(filter) {
+            currentCalendarFilter = filter;
+            console.log('🔍 Calendar filter set to:', filter);
+            
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('filter' + filter.charAt(0).toUpperCase() + filter.slice(1)).classList.add('active');
+            
+            // Re-render calendar with filter
             renderCalendar();
         }
         
@@ -1436,6 +1497,14 @@
                     const reminderDate = r['Due Date'];
                     if (!reminderDate) return false;
                     
+                    // Apply type filter
+                    if (currentCalendarFilter !== 'all') {
+                        const type = (r['Type Of Reminder'] || '').toLowerCase();
+                        if (!type.includes(currentCalendarFilter)) {
+                            return false;
+                        }
+                    }
+                    
                     // Handle different date formats
                     let reminderDateObj;
                     
@@ -1467,11 +1536,18 @@
                 
                 dayReminders.forEach(reminder => {
                     const title = reminder['Name Your Reminder'] || reminder.Reminder || 'Reminder';
+                    const type = reminder['Type Of Reminder'] || '';
                     const urgency = reminder.urgency || 'normal';
                     const isRepeating = reminder.isRepeating ? 'repeating' : '';
                     
-                    html += `<div class="calendar-reminder ${urgency} ${isRepeating}" title="${title}">
-                        ${title.length > 15 ? title.substring(0, 15) + '...' : title}
+                    // Add type emoji
+                    let typeIcon = '';
+                    if (type.toLowerCase().includes('work')) typeIcon = '💼';
+                    else if (type.toLowerCase().includes('personal')) typeIcon = '👤';
+                    else if (type.toLowerCase().includes('payment')) typeIcon = '💳';
+                    
+                    html += `<div class="calendar-reminder ${urgency} ${isRepeating}" title="${typeIcon} ${type}: ${title}">
+                        ${typeIcon} ${title.length > 12 ? title.substring(0, 12) + '...' : title}
                     </div>`;
                 });
                 
