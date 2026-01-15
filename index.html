@@ -2171,7 +2171,17 @@
                         return false; // Drop past due non-repeating reminders
                     }
                     
-                    console.log(`    ✅ Kept: Future reminder`);
+                    // Future reminder - check if it repeats
+                    const repeat = (row['Repeat'] || row['repeat'] || '').toString().toLowerCase();
+                    const isRepeating = repeat === 'true' || repeat === 'yes' || repeat === '1';
+                    row['isRepeating'] = isRepeating;
+                    
+                    if (isRepeating) {
+                        const frequency = (row['Repeat Frequency'] || row['RepeatFrequency'] || '').toLowerCase();
+                        row['frequency'] = frequency;
+                    }
+                    
+                    console.log(`    ✅ Kept: Future reminder (Repeating: ${isRepeating})`);
                     
                     return true; // Keep future reminders
                 }).map(row => {
