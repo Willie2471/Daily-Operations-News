@@ -1439,28 +1439,28 @@
         
         function renderCalendar() {
             console.log('📅 Rendering calendar...');
-            console.log('  Total reminders loaded:', remindersData.length);
-            console.log('  Current calendar month:', currentCalendarMonth, 'year:', currentCalendarYear);
-            console.log('  Current filter:', currentCalendarFilter);
-            
-            // Debug: Show first few reminders and their dates
-            if (remindersData.length > 0) {
-                console.log('  Sample reminder dates:');
-                remindersData.slice(0, 10).forEach((r, i) => {
-                    const name = r['Name Your Reminder'];
-                    const due = r['Due Date'];
-                    const type = r['Type Of Reminder'];
-                    const repeat = r['isRepeating'];
-                    console.log(`    ${i + 1}. "${name}" - Due: "${due}", Type: "${type}", Repeat: ${repeat}`);
-                });
-            }
+            console.log(`  Month: ${currentCalendarMonth}, Year: ${currentCalendarYear}, Filter: ${currentCalendarFilter}`);
+            console.log(`  Total reminders: ${remindersData.length}`);
             
             const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
                                 'July', 'August', 'September', 'October', 'November', 'December'];
             const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             
             // Update header
-            // Count reminders for this month (using same logic as calendar display)
+            // Count reminders for this month (using EXACT same logic as calendar display)
+            
+            // Generate all dates in this month as ISO strings (EXACT same as calendar)
+            const monthFirstDay = new Date(currentCalendarYear, currentCalendarMonth, 1);
+            const monthLastDay = new Date(currentCalendarYear, currentCalendarMonth + 1, 0);
+            const monthDaysCount = monthLastDay.getDate();
+            
+            const monthDateStrings = [];
+            for (let day = 1; day <= monthDaysCount; day++) {
+                const date = new Date(currentCalendarYear, currentCalendarMonth, day);
+                const dateStr = date.toISOString().split('T')[0];
+                monthDateStrings.push(dateStr);
+            }
+            
             const monthReminders = remindersData.filter(r => {
                 const dueDate = r['Due Date'];
                 if (!dueDate) return false;
@@ -1473,23 +1473,26 @@
                     }
                 }
                 
-                // Use same date parsing as calendar display
-                let dateObj;
+                // Use EXACT same date parsing as calendar display
+                let reminderDateObj;
                 if (dueDate.includes('-')) {
-                    dateObj = new Date(dueDate);
+                    reminderDateObj = new Date(dueDate);
                 } else if (dueDate.includes('/')) {
-                    dateObj = new Date(dueDate);
+                    reminderDateObj = new Date(dueDate);
                 } else {
-                    dateObj = new Date(dueDate);
+                    reminderDateObj = new Date(dueDate);
                 }
                 
-                if (isNaN(dateObj.getTime())) return false;
+                if (isNaN(reminderDateObj.getTime())) return false;
                 
-                return dateObj.getMonth() === currentCalendarMonth && 
-                       dateObj.getFullYear() === currentCalendarYear;
+                // Convert to ISO string (EXACT same as calendar)
+                const reminderDateStr = reminderDateObj.toISOString().split('T')[0];
+                
+                // Check if this ISO string is in our month's date list
+                return monthDateStrings.includes(reminderDateStr);
             });
             
-            console.log(`📊 Month reminder count: ${monthReminders.length} for ${monthNames[currentCalendarMonth]} ${currentCalendarYear}`);
+            console.log(`📊 ${monthNames[currentCalendarMonth]} ${currentCalendarYear}: ${monthReminders.length} reminder(s)`);
             
             document.getElementById('calendarMonthYear').textContent = 
                 `${monthNames[currentCalendarMonth]} ${currentCalendarYear} (${monthReminders.length} reminder${monthReminders.length !== 1 ? 's' : ''})`;
