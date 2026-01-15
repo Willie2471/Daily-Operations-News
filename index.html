@@ -1440,12 +1440,18 @@
         function renderCalendar() {
             console.log('📅 Rendering calendar...');
             console.log('  Total reminders loaded:', remindersData.length);
+            console.log('  Current calendar month:', currentCalendarMonth, 'year:', currentCalendarYear);
+            console.log('  Current filter:', currentCalendarFilter);
             
             // Debug: Show first few reminders and their dates
             if (remindersData.length > 0) {
                 console.log('  Sample reminder dates:');
-                remindersData.slice(0, 5).forEach((r, i) => {
-                    console.log(`    ${i + 1}. "${r['Name Your Reminder']}" - Due: "${r['Due Date']}"`);
+                remindersData.slice(0, 10).forEach((r, i) => {
+                    const name = r['Name Your Reminder'];
+                    const due = r['Due Date'];
+                    const type = r['Type Of Reminder'];
+                    const repeat = r['isRepeating'];
+                    console.log(`    ${i + 1}. "${name}" - Due: "${due}", Type: "${type}", Repeat: ${repeat}`);
                 });
             }
             
@@ -1454,8 +1460,39 @@
             const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             
             // Update header
+            // Count reminders for this month (using same logic as calendar display)
+            const monthReminders = remindersData.filter(r => {
+                const dueDate = r['Due Date'];
+                if (!dueDate) return false;
+                
+                // Apply type filter (same as calendar)
+                if (currentCalendarFilter !== 'all') {
+                    const type = (r['Type Of Reminder'] || '').toLowerCase();
+                    if (!type.includes(currentCalendarFilter)) {
+                        return false;
+                    }
+                }
+                
+                // Use same date parsing as calendar display
+                let dateObj;
+                if (dueDate.includes('-')) {
+                    dateObj = new Date(dueDate);
+                } else if (dueDate.includes('/')) {
+                    dateObj = new Date(dueDate);
+                } else {
+                    dateObj = new Date(dueDate);
+                }
+                
+                if (isNaN(dateObj.getTime())) return false;
+                
+                return dateObj.getMonth() === currentCalendarMonth && 
+                       dateObj.getFullYear() === currentCalendarYear;
+            });
+            
+            console.log(`📊 Month reminder count: ${monthReminders.length} for ${monthNames[currentCalendarMonth]} ${currentCalendarYear}`);
+            
             document.getElementById('calendarMonthYear').textContent = 
-                `${monthNames[currentCalendarMonth]} ${currentCalendarYear}`;
+                `${monthNames[currentCalendarMonth]} ${currentCalendarYear} (${monthReminders.length} reminder${monthReminders.length !== 1 ? 's' : ''})`;
             
             // Calculate calendar grid
             const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1);
@@ -1528,6 +1565,11 @@
                     return reminderDateStr === dateStr;
                 });
                 
+                // Log if reminders found for this day
+                if (dayReminders.length > 0) {
+                    console.log(`  📍 ${dateStr}: ${dayReminders.length} reminder(s) - ${dayReminders.map(r => r['Name Your Reminder']).join(', ')}`);
+                }
+                
                 let todayClass = isToday ? 'today' : '';
                 
                 html += `<div class="calendar-day ${todayClass}" onclick="openReminderForm('${dateStr}')">
@@ -1565,6 +1607,7 @@
             }
             
             calendarGrid.innerHTML = html;
+            console.log('✅ Calendar rendered successfully');
         }
         
         function openReminderForm(dateStr) {
