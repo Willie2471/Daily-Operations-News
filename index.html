@@ -2075,7 +2075,7 @@
                     console.log('⚠️ Google Tasks sheet not configured. Using empty data.');
                     tasksData.newLeads = [];
                     tasksData.incomingCalls = [];
-                    tasksData.needToCall = [];
+                    tasksData.needToFollowup = [];
                     tasksData.mowingEstimates = [];
                     tasksData.newMeetingTopics = [];
                     tasksData.followUpFromMeet = [];
@@ -2143,7 +2143,7 @@
                 // Set empty arrays if error
                 tasksData.newLeads = [];
                 tasksData.incomingCalls = [];
-                tasksData.needToCall = [];
+                tasksData.needToFollowup = [];
                 tasksData.mowingEstimates = [];
                 tasksData.newMeetingTopics = [];
                 tasksData.followUpFromMeet = [];
@@ -2374,7 +2374,7 @@
                 ${createCard('newLeads', '📋', 'New Leads', tasksData.newLeads.length, 'Estimates needed')}
                 ${createCard('newMessages', '💬', 'New Messages', tasksData.newMessages.length, 'From EveryChat', 'https://docs.google.com/spreadsheets/d/1ZSCMDhwFQwI0cvfZ5tT4aq_OzOJndIcfKeyCkA4h2Nk/edit?gid=0#gid=0')}
                 ${createCard('incomingCalls', '📞', 'Voicemails', tasksData.incomingCalls.length, 'Calls to return')}
-                ${createCard('needToFollowup', '☎️', 'Follow Up', tasksData.needToCall.length, 'Need To Follow Up')}
+                ${createCard('needToFollowup', '☎️', 'Follow Up', tasksData.needToFollowup.length, 'Need To Follow Up')}
                 ${createCard('mowingEstimates', '🏡', 'Mowing Estimates', tasksData.mowingEstimates.length, 'Pending quotes')}
                 ${createRemindersCard()}
                 <div class="metric-card ${bankBalance < CONFIG.BANK_BALANCE_THRESHOLD ? 'alert-danger' : ''}" id="bankBalanceCard">
@@ -2849,7 +2849,7 @@
                 tasksData.newLeads = [];
                 tasksData.newMessages = [];
                 tasksData.incomingCalls = [];
-                tasksData.needToCall = [];
+                tasksData.needToFollowup = [];
                 tasksData.mowingEstimates = [];
                 tasksData.newMeetingTopics = [];
                 tasksData.followUpFromMeet = [];
@@ -2925,7 +2925,7 @@
             updateCount('newLeads');
             updateCount('newMessages');
             updateCount('incomingCalls');
-            updateCount('needToCall');
+            updateCount('needToFollowup');
             updateCount('mowingEstimates');
         }
 
