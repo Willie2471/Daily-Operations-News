@@ -1771,7 +1771,7 @@
             };
             
             checkTaskAge(tasksData.newLeads || [], 'New Lead');
-            checkTaskAge(tasksData.needToFollowUp || [], 'Need To Follow Up');
+            checkTaskAge(tasksData.needToFollowup || [], 'Need To Follow Up');
             checkTaskAge(tasksData.mowingEstimates || [], 'Mowing Estimate');
             checkTaskAge(tasksData.newMessages || [], 'New Message');
             checkTaskAge(tasksData.incomingCalls || [], 'Voicemail');
@@ -2124,7 +2124,7 @@
                 tasksData.newLeads = activeTasks.filter(row => row['List'] === 'New Leads');
                 console.log('📋 New Leads found:', tasksData.newLeads.length);
                 tasksData.incomingCalls = activeTasks.filter(row => row['List'] === 'Incoming Calls');
-                tasksData.needToFollowUp = activeTasks.filter(row => row['List'] === 'Need To Follow Up');
+                tasksData.needToFollowup = activeTasks.filter(row => row['List'] === 'Need To Follow Up');
                 tasksData.mowingEstimates = activeTasks.filter(row => row['List'] === 'Mowing Estimates');
                 tasksData.newMeetingTopics = activeTasks.filter(row => row['List'] === 'New Meeting Topics');
                 tasksData.followUpFromMeet = activeTasks.filter(row => row['List'] === 'Follow Up');
@@ -2374,7 +2374,7 @@
                 ${createCard('newLeads', '📋', 'New Leads', tasksData.newLeads.length, 'Estimates needed')}
                 ${createCard('newMessages', '💬', 'New Messages', tasksData.newMessages.length, 'From EveryChat', 'https://docs.google.com/spreadsheets/d/1ZSCMDhwFQwI0cvfZ5tT4aq_OzOJndIcfKeyCkA4h2Nk/edit?gid=0#gid=0')}
                 ${createCard('incomingCalls', '📞', 'Voicemails', tasksData.incomingCalls.length, 'Calls to return')}
-                ${createCard('needToFollowUp', '☎️', 'Follow Up', tasksData.needToFollowUp.length, 'Need To Follow Up')}
+                ${createCard('needToFollowup', '☎️', 'Follow Up', tasksData.needToCall.length, 'Need To Follow Up')}
                 ${createCard('mowingEstimates', '🏡', 'Mowing Estimates', tasksData.mowingEstimates.length, 'Pending quotes')}
                 ${createRemindersCard()}
                 <div class="metric-card ${bankBalance < CONFIG.BANK_BALANCE_THRESHOLD ? 'alert-danger' : ''}" id="bankBalanceCard">
