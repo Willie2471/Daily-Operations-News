@@ -1333,11 +1333,7 @@
         <button onclick="closeAlert()" style="background:none;border:none;color:white;font-size:1.5em;cursor:pointer;">&times;</button>
     </div>
 
-    <!-- Critical Alerts Section -->
-    <div id="criticalAlerts" class="critical-alerts">
-        <h2>🚨 CRITICAL ALERTS</h2>
-        <div id="criticalAlertsContent"></div>
-    </div>
+   <!-- Critical Alerts Section -->
 
     <div class="dashboard-header">
         <div class="header-content">
@@ -1852,6 +1848,7 @@
         function closeWeatherAlert() {
             document.getElementById('weatherAlertBanner').classList.remove('show');
         }
+TOGGLE CRITICAL ALERTS // ============================================ function toggleCriticalAlerts() { const content = document.getElementById('criticalAlertsContent'); const arrow = document.getElementById('criticalAlertsArrow'); if (content.classList.contains('expanded')) { content.classList.remove('expanded'); arrow.classList.remove('expanded'); } else { content.classList.add('expanded'); arrow.classList.add('expanded'); } }
         
         // Close modal when clicking outside
         window.onclick = function(event) {
@@ -4707,18 +4704,7 @@
                 }
             });
             
-            // Display critical alerts
-            const alertsDiv = document.getElementById('criticalAlerts');
-            const contentDiv = document.getElementById('criticalAlertsContent');
-            
-            if (criticalAlerts.length > 0) {
-                contentDiv.innerHTML = criticalAlerts.map(alert => 
-                    `<div class="critical-item">${alert}</div>`
-                ).join('');
-                alertsDiv.classList.add('show');
-            } else {
-                alertsDiv.classList.remove('show');
-            }
+           // Display critical alerts const 
         }
 
         // ============================================
