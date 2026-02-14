@@ -273,6 +273,31 @@
             to { transform: translateY(0); opacity: 1; }
         }
         
+        /* Add any remaining CSS here if needed */
+    </style>
+</head>
+<body>
+    <div id="alertBanner" class="alert-banner">
+        <div style="display:flex;align-items:center;gap:15px;">
+            <span>⚠️</span>
+            <div id="alertMessage"></div>
+        </div>
+        <button onclick="closeAlert()" style="background:none;border:none;color:white;font-size:1.5em;cursor:pointer;">&times;</button>
+    </div>
+
+    <!-- Critical Alerts Section -->
+    <div id="criticalAlerts" class="critical-alerts">
+        <div class="critical-alerts-header" onclick="toggleCriticalAlerts()">
+            <div class="critical-alerts-title-row">
+                <h2>🚨 CRITICAL ALERTS</h2>
+                <span class="critical-alerts-count" id="criticalAlertsCount">0</span>
+            </div>
+            <span class="critical-alerts-arrow" id="criticalAlertsArrow">▼</span>
+        </div>
+        <div class="critical-alerts-content" id="criticalAlertsContent"></div>
+    </div>
+
+    <div class="dashboard-header">
         <div class="header-content">
             <div class="logo-section">
                 <div class="title-section">
