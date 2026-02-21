@@ -2184,7 +2184,7 @@ function toggleCriticalAlerts() {
                 tasksData.needToFollowup = activeTasks.filter(row => row['List'] === 'Need To Follow Up');
                 tasksData.mowingEstimates = activeTasks.filter(row => row['List'] === 'Mowing Estimates');
                 tasksData.newMeetingTopics = activeTasks.filter(row => row['List'] === 'New Meeting Topics');
-                tasksData.followUpFromMeet = activeTasks.filter(row => row['List'] === 'Follow Up');
+                tasksData.followUpFromLastMeet = activeTasks.filter(row => row['List'] === 'Follow Up From Last Meet');
                 
                 // Calculate age for each task
                 Object.keys(tasksData).forEach(listKey => {
@@ -2877,7 +2877,7 @@ function toggleCriticalAlerts() {
             content += '</ul><br>';
 
             content += '<h3 style="color:#2d5016;">Follow Up From Last Meeting</h3><ul>';
-            (tasksData.followUpFromMeet || []).forEach(task => {
+            (tasksData.followUpFromLastMeet || []).forEach(task => {
                 content += `<li><strong>${task.title || task.Title || task.Task}</strong>`;
                 if (task.notes || task.Notes) content += `<br><em>${task.notes || task.Notes}</em>`;
                 if (task['Due Date'] || task.due) content += `<br><span style="color:#f39c12;">Due: ${new Date(task['Due Date'] || task.due).toLocaleDateString()}</span>`;
